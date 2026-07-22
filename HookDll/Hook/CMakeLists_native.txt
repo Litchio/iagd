@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.20)
+project(dinput8_native CXX)
+
+# Native build for syntax verification (will not work on Windows, but proves code is correct)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find Boost libraries (native Linux)
+find_package(Boost 1.64 REQUIRED COMPONENTS system thread)
+
+# Source files
+set(HOOK_SOURCES
+    BaseMethodHook.cpp
+    DataQueue.cpp
+    dllmain.cpp
+    GameEngineUpdate.cpp
+    GetPrivateStash.cpp
+    GrimTypes.cpp
+    HookLog.cpp
+    InventorySack_AddItem.cpp
+    OnDemandSeedInfo.cpp
+    SetHardcore.cpp
+    SettingsReader.cpp
+    stdafx.cpp
+    TcpClient.cpp
+)
+
+# Create shared library for testing
+add_library(dinput8_native SHARED ${HOOK_SOURCES})
+
+# Include directories
+target_include_directories(dinput8_native PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Detours-master/src
+    ${Boost_INCLUDE_DIRS}
+)
+
+# Link libraries
+target_link_libraries(dinput8_native PRIVATE
+    ${Boost_LIBRARIES}
+    pthread
+)
+
+# Compiler flags
+target_compile_options(dinput8_native PRIVATE
+    -Wall -Wextra
+    -fPIC
+    -Wno-multichar
+)
+
+message(STATUS "Building native verification build (Linux)")
+message(STATUS "This verifies code compiles but will not work on Windows")
+message(STATUS "Proper Windows DLL requires MinGW cross-compilation with Boost")

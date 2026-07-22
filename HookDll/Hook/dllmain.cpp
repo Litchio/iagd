@@ -15,6 +15,8 @@
 #include "Logger.h"
 #include "SetHardcore.h"
 #include "SettingsReader.h"
+#include "TcpClient.h"
+#include "JsonSerializer.h"
 HookLog g_log;
 
 #pragma region Variables
@@ -41,6 +43,7 @@ HANDLE g_thread;
 
 DataQueue g_dataQueue;
 InventorySack_AddItem* g_InventorySack_AddItemInstance = NULL;
+TcpClientPtr g_tcpClient = nullptr;  // TCP client for Rust backend
 
 HWND g_targetWnd = NULL;
 
@@ -168,10 +171,12 @@ void WriteMessageToFile(DWORD dwData, void* lpData, DWORD cbData) {
 }
 
 
-/// Thread function that dispatches queued message blocks to the IA application.
+/// Thread function that dispatches queued message blocks to the Rust backend via TCP
 void WorkerThreadMethod() {
 	try {
 		bool wineSetActiveDone = false;
+		LogToFile(LogLevel::INFO, L"Worker thread started, connecting to TCP server at 127.0.0.1:1337");
+
 		while ((g_hEvent != NULL) && (WaitForSingleObject(g_hEvent, INFINITE) == WAIT_OBJECT_0)) {
 			if (g_hEvent == NULL) {
 				break;
@@ -204,24 +209,16 @@ void WorkerThreadMethod() {
 			while (!g_dataQueue.empty()) {
 				DataItemPtr item = g_dataQueue.pop();
 
-				if (g_isRunningInWine) {
-					WriteMessageToFile(item->type(), item->data(), item->size());
-				}
-				else {
-					if (g_targetWnd == NULL) {
-						// We have data, but no target window, so just delete the message
-						continue;
+				// Send via TCP to Rust backend
+				if (g_tcpClient != nullptr) {
+					std::string json = JsonSerializer::MessageToJson(
+						static_cast<MessageType>(item->type()),
+						item->data(),
+						item->size()
+					);
+					if (!g_tcpClient->SendMessage(json)) {
+						LogToFile(LogLevel::WARNING, L"Failed to send message via TCP");
 					}
-
-					COPYDATASTRUCT data;
-					data.dwData = item->type();
-					data.lpData = item->data();
-					data.cbData = item->size();
-
-					SendMessage(g_targetWnd, WM_COPYDATA, 0, (LPARAM)&data);
-					auto lastErrorCode = GetLastError();
-					if (lastErrorCode != 0)
-						LOG(L"After SendMessage error code is " << lastErrorCode);
 				}
 			}
 
@@ -488,6 +485,11 @@ int ProcessAttach(HINSTANCE _hModule) {
 	}
 	LogToFile(LogLevel::INFO, L"Hooking complete..");
 
+	// Initialize TCP client for Rust backend
+	g_tcpClient = std::make_shared<TcpClient>("127.0.0.1", 1337);
+	if (!g_tcpClient->Connect()) {
+		LogToFile(LogLevel::WARNING, L"Failed to connect to TCP server, will retry on first message");
+	}
 
 	StartWorkerThread();
 	LogToFile(LogLevel::INFO, L"Initialization complete..");
@@ -505,6 +507,11 @@ int ProcessDetach(HINSTANCE _hModule) {
 	LOG(L"Detatching DLL..");
 	OutputDebugString(L"ProcessDetach");
 
+	// Disconnect TCP client
+	if (g_tcpClient != nullptr) {
+		g_tcpClient->Disconnect();
+		g_tcpClient = nullptr;
+	}
 
 	for (unsigned int i = 0; i < hooks.size(); i++) {
 		hooks[i]->DisableHook();

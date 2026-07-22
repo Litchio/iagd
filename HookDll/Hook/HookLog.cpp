@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "HookLog.h"
 #include <filesystem>
 #include <iostream>
