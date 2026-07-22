@@ -414,6 +414,21 @@ int ProcessAttach(HINSTANCE _hModule) {
 		}
 	}
 
+	// PIN THE DLL IN MEMORY - CRITICAL FIX
+	// Grim Dawn dynamically loads and immediately unloads dinput8.dll to probe for controllers.
+	// If we don't pin the DLL, it gets freed while our detached tcpConnectThread is still running,
+	// causing an Access Violation (segfault) when the thread tries to execute code no longer in memory.
+	// This call forces Windows/Wine to never unload the DLL, even if the game calls FreeLibrary.
+	HMODULE hDummy = NULL;
+	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN, (LPCSTR)&ProcessAttach, &hDummy)) {
+		LogToFile(LogLevel::INFO, L"DLL pinned in memory successfully");
+	}
+	else {
+		LogToFile(LogLevel::WARNING, L"Failed to pin DLL in memory (GetModuleHandleEx failed), attempting fallback");
+		// Fallback: artificially bump reference count by loading ourselves
+		LoadLibraryA("dinput8.dll");
+		LogToFile(LogLevel::INFO, L"Fallback DLL pinning via LoadLibrary completed");
+	}
 
 	GAME::GameEngine* gameEngine = fnGetGameEngine();
 	if (gameEngine == nullptr) {
