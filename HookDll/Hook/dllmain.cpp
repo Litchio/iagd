@@ -485,11 +485,20 @@ int ProcessAttach(HINSTANCE _hModule) {
 	}
 	LogToFile(LogLevel::INFO, L"Hooking complete..");
 
-	// Initialize TCP client for Rust backend
+	// Initialize TCP client for Rust backend in a separate thread to avoid loader lock deadlock
 	g_tcpClient = std::make_shared<TcpClient>("127.0.0.1", 1337);
-	if (!g_tcpClient->Connect()) {
-		LogToFile(LogLevel::WARNING, L"Failed to connect to TCP server, will retry on first message");
-	}
+	// Spawn a detached thread to connect to TCP server - do NOT block DllMain
+	std::thread tcpConnectThread([]() {
+		try {
+			if (!g_tcpClient->Connect()) {
+				LogToFile(LogLevel::WARNING, L"Failed to connect to TCP server, will retry on first message");
+			}
+		}
+		catch (...) {
+			LogToFile(LogLevel::WARNING, L"Exception during TCP connection attempt");
+		}
+	});
+	tcpConnectThread.detach();  // Detach so DllMain doesn't wait
 
 	StartWorkerThread();
 	LogToFile(LogLevel::INFO, L"Initialization complete..");
@@ -544,11 +553,60 @@ BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  ul_reason_for_call, LPVOID lpRes
 	case DLL_PROCESS_ATTACH:
 		return ProcessAttach(hModule);
 
-	case DLL_PROCESS_DETACH:
-		return ProcessDetach(hModule);
+		case DLL_PROCESS_DETACH:
+			return ProcessDetach(hModule);
 	}
 	return TRUE;
 }
+
+// ============================================================================
+// DirectInput8 Proxy Export - CRITICAL for game to load this DLL
+// ============================================================================
+// This export forwards DirectInput8Create calls to the real system dinput8.dll
+// Without this, the game will crash immediately when trying to load the proxy
+
+typedef HRESULT(WINAPI* DirectInput8CreateFunc)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+
+extern "C" __declspec(dllexport) HRESULT WINAPI DirectInput8Create(
+    HINSTANCE hinst,
+    DWORD dwVersion,
+    REFIID riidltf,
+    LPVOID* ppvOut,
+    LPUNKNOWN punkOuter
+)
+{
+    LogToFile(LogLevel::INFO, L"DirectInput8Create called - forwarding to real dinput8.dll");
+    
+    // Load the real system dinput8.dll (bypasses our proxy DLL)
+    // We use the system path to ensure we get the real one, not our proxy
+    HMODULE hRealDinput = LoadLibraryA("C:\\Windows\\System32\\dinput8.dll");
+    if (!hRealDinput) {
+        LogToFile(LogLevel::WARNING, L"Failed to load real dinput8.dll from System32");
+        // Fallback: try just the name (system will search)
+        hRealDinput = LoadLibraryA("dinput8.dll");
+        if (!hRealDinput) {
+            LogToFile(LogLevel::FATAL, L"Critical: Could not load real dinput8.dll at all");
+            return E_FAIL;
+        }
+    }
+    
+    // Get the real DirectInput8Create function from the system DLL
+    DirectInput8CreateFunc pRealDirectInput8Create = (DirectInput8CreateFunc)GetProcAddress(hRealDinput, "DirectInput8Create");
+    if (!pRealDirectInput8Create) {
+        LogToFile(LogLevel::FATAL, L"Critical: Could not get DirectInput8Create from real dinput8.dll");
+        FreeLibrary(hRealDinput);
+        return E_FAIL;
+    }
+    
+    // Forward the call to the real function
+    HRESULT hr = pRealDirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+    
+    // Note: We do NOT call FreeLibrary here because the caller will keep using the interface
+    // The real dinput8.dll will remain loaded for the lifetime of the process
+    
+    return hr;
+}
+
 #pragma endregion
 
 
