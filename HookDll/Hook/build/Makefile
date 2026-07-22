@@ -174,13 +174,13 @@ dinput8/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/build
 .PHONY : dinput8/fast
 
-BaseMethodHook.o: BaseMethodHook.cpp.o
-.PHONY : BaseMethodHook.o
+BaseMethodHook.obj: BaseMethodHook.cpp.obj
+.PHONY : BaseMethodHook.obj
 
 # target to build an object file
-BaseMethodHook.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/BaseMethodHook.cpp.o
-.PHONY : BaseMethodHook.cpp.o
+BaseMethodHook.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/BaseMethodHook.cpp.obj
+.PHONY : BaseMethodHook.cpp.obj
 
 BaseMethodHook.i: BaseMethodHook.cpp.i
 .PHONY : BaseMethodHook.i
@@ -198,13 +198,13 @@ BaseMethodHook.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/BaseMethodHook.cpp.s
 .PHONY : BaseMethodHook.cpp.s
 
-DataQueue.o: DataQueue.cpp.o
-.PHONY : DataQueue.o
+DataQueue.obj: DataQueue.cpp.obj
+.PHONY : DataQueue.obj
 
 # target to build an object file
-DataQueue.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/DataQueue.cpp.o
-.PHONY : DataQueue.cpp.o
+DataQueue.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/DataQueue.cpp.obj
+.PHONY : DataQueue.cpp.obj
 
 DataQueue.i: DataQueue.cpp.i
 .PHONY : DataQueue.i
@@ -222,13 +222,13 @@ DataQueue.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/DataQueue.cpp.s
 .PHONY : DataQueue.cpp.s
 
-GameEngineUpdate.o: GameEngineUpdate.cpp.o
-.PHONY : GameEngineUpdate.o
+GameEngineUpdate.obj: GameEngineUpdate.cpp.obj
+.PHONY : GameEngineUpdate.obj
 
 # target to build an object file
-GameEngineUpdate.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.o
-.PHONY : GameEngineUpdate.cpp.o
+GameEngineUpdate.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.obj
+.PHONY : GameEngineUpdate.cpp.obj
 
 GameEngineUpdate.i: GameEngineUpdate.cpp.i
 .PHONY : GameEngineUpdate.i
@@ -246,13 +246,13 @@ GameEngineUpdate.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.s
 .PHONY : GameEngineUpdate.cpp.s
 
-GetPrivateStash.o: GetPrivateStash.cpp.o
-.PHONY : GetPrivateStash.o
+GetPrivateStash.obj: GetPrivateStash.cpp.obj
+.PHONY : GetPrivateStash.obj
 
 # target to build an object file
-GetPrivateStash.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GetPrivateStash.cpp.o
-.PHONY : GetPrivateStash.cpp.o
+GetPrivateStash.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj
+.PHONY : GetPrivateStash.cpp.obj
 
 GetPrivateStash.i: GetPrivateStash.cpp.i
 .PHONY : GetPrivateStash.i
@@ -270,13 +270,13 @@ GetPrivateStash.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GetPrivateStash.cpp.s
 .PHONY : GetPrivateStash.cpp.s
 
-GrimTypes.o: GrimTypes.cpp.o
-.PHONY : GrimTypes.o
+GrimTypes.obj: GrimTypes.cpp.obj
+.PHONY : GrimTypes.obj
 
 # target to build an object file
-GrimTypes.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GrimTypes.cpp.o
-.PHONY : GrimTypes.cpp.o
+GrimTypes.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GrimTypes.cpp.obj
+.PHONY : GrimTypes.cpp.obj
 
 GrimTypes.i: GrimTypes.cpp.i
 .PHONY : GrimTypes.i
@@ -294,13 +294,13 @@ GrimTypes.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GrimTypes.cpp.s
 .PHONY : GrimTypes.cpp.s
 
-HookLog.o: HookLog.cpp.o
-.PHONY : HookLog.o
+HookLog.obj: HookLog.cpp.obj
+.PHONY : HookLog.obj
 
 # target to build an object file
-HookLog.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookLog.cpp.o
-.PHONY : HookLog.cpp.o
+HookLog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookLog.cpp.obj
+.PHONY : HookLog.cpp.obj
 
 HookLog.i: HookLog.cpp.i
 .PHONY : HookLog.i
@@ -318,13 +318,13 @@ HookLog.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookLog.cpp.s
 .PHONY : HookLog.cpp.s
 
-InventorySack_AddItem.o: InventorySack_AddItem.cpp.o
-.PHONY : InventorySack_AddItem.o
+InventorySack_AddItem.obj: InventorySack_AddItem.cpp.obj
+.PHONY : InventorySack_AddItem.obj
 
 # target to build an object file
-InventorySack_AddItem.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.o
-.PHONY : InventorySack_AddItem.cpp.o
+InventorySack_AddItem.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj
+.PHONY : InventorySack_AddItem.cpp.obj
 
 InventorySack_AddItem.i: InventorySack_AddItem.cpp.i
 .PHONY : InventorySack_AddItem.i
@@ -342,13 +342,13 @@ InventorySack_AddItem.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.s
 .PHONY : InventorySack_AddItem.cpp.s
 
-OnDemandSeedInfo.o: OnDemandSeedInfo.cpp.o
-.PHONY : OnDemandSeedInfo.o
+OnDemandSeedInfo.obj: OnDemandSeedInfo.cpp.obj
+.PHONY : OnDemandSeedInfo.obj
 
 # target to build an object file
-OnDemandSeedInfo.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.o
-.PHONY : OnDemandSeedInfo.cpp.o
+OnDemandSeedInfo.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj
+.PHONY : OnDemandSeedInfo.cpp.obj
 
 OnDemandSeedInfo.i: OnDemandSeedInfo.cpp.i
 .PHONY : OnDemandSeedInfo.i
@@ -366,13 +366,13 @@ OnDemandSeedInfo.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.s
 .PHONY : OnDemandSeedInfo.cpp.s
 
-SetHardcore.o: SetHardcore.cpp.o
-.PHONY : SetHardcore.o
+SetHardcore.obj: SetHardcore.cpp.obj
+.PHONY : SetHardcore.obj
 
 # target to build an object file
-SetHardcore.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SetHardcore.cpp.o
-.PHONY : SetHardcore.cpp.o
+SetHardcore.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SetHardcore.cpp.obj
+.PHONY : SetHardcore.cpp.obj
 
 SetHardcore.i: SetHardcore.cpp.i
 .PHONY : SetHardcore.i
@@ -390,13 +390,13 @@ SetHardcore.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SetHardcore.cpp.s
 .PHONY : SetHardcore.cpp.s
 
-SettingsReader.o: SettingsReader.cpp.o
-.PHONY : SettingsReader.o
+SettingsReader.obj: SettingsReader.cpp.obj
+.PHONY : SettingsReader.obj
 
 # target to build an object file
-SettingsReader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SettingsReader.cpp.o
-.PHONY : SettingsReader.cpp.o
+SettingsReader.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SettingsReader.cpp.obj
+.PHONY : SettingsReader.cpp.obj
 
 SettingsReader.i: SettingsReader.cpp.i
 .PHONY : SettingsReader.i
@@ -414,13 +414,13 @@ SettingsReader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/SettingsReader.cpp.s
 .PHONY : SettingsReader.cpp.s
 
-TcpClient.o: TcpClient.cpp.o
-.PHONY : TcpClient.o
+TcpClient.obj: TcpClient.cpp.obj
+.PHONY : TcpClient.obj
 
 # target to build an object file
-TcpClient.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/TcpClient.cpp.o
-.PHONY : TcpClient.cpp.o
+TcpClient.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/TcpClient.cpp.obj
+.PHONY : TcpClient.cpp.obj
 
 TcpClient.i: TcpClient.cpp.i
 .PHONY : TcpClient.i
@@ -438,13 +438,13 @@ TcpClient.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/TcpClient.cpp.s
 .PHONY : TcpClient.cpp.s
 
-dllmain.o: dllmain.cpp.o
-.PHONY : dllmain.o
+dllmain.obj: dllmain.cpp.obj
+.PHONY : dllmain.obj
 
 # target to build an object file
-dllmain.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/dllmain.cpp.o
-.PHONY : dllmain.cpp.o
+dllmain.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/dllmain.cpp.obj
+.PHONY : dllmain.cpp.obj
 
 dllmain.i: dllmain.cpp.i
 .PHONY : dllmain.i
@@ -462,13 +462,13 @@ dllmain.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/dllmain.cpp.s
 .PHONY : dllmain.cpp.s
 
-stdafx.o: stdafx.cpp.o
-.PHONY : stdafx.o
+stdafx.obj: stdafx.cpp.obj
+.PHONY : stdafx.obj
 
 # target to build an object file
-stdafx.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/stdafx.cpp.o
-.PHONY : stdafx.cpp.o
+stdafx.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/stdafx.cpp.obj
+.PHONY : stdafx.cpp.obj
 
 stdafx.i: stdafx.cpp.i
 .PHONY : stdafx.i
@@ -486,6 +486,126 @@ stdafx.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/stdafx.cpp.s
 .PHONY : stdafx.cpp.s
 
+workspaces/iagd/HookDll/Detours-master/src/creatwth.obj: workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.obj
+
+# target to build an object file
+workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj
+
+workspaces/iagd/HookDll/Detours-master/src/creatwth.i: workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.i
+
+# target to preprocess a source file
+workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.i
+
+workspaces/iagd/HookDll/Detours-master/src/creatwth.s: workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.s
+
+# target to generate assembly for a file
+workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.s
+
+workspaces/iagd/HookDll/Detours-master/src/detours.obj: workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.obj
+
+# target to build an object file
+workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj
+
+workspaces/iagd/HookDll/Detours-master/src/detours.i: workspaces/iagd/HookDll/Detours-master/src/detours.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.i
+
+# target to preprocess a source file
+workspaces/iagd/HookDll/Detours-master/src/detours.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.cpp.i
+
+workspaces/iagd/HookDll/Detours-master/src/detours.s: workspaces/iagd/HookDll/Detours-master/src/detours.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.s
+
+# target to generate assembly for a file
+workspaces/iagd/HookDll/Detours-master/src/detours.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/detours.cpp.s
+
+workspaces/iagd/HookDll/Detours-master/src/disasm.obj: workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.obj
+
+# target to build an object file
+workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj
+
+workspaces/iagd/HookDll/Detours-master/src/disasm.i: workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.i
+
+# target to preprocess a source file
+workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.i
+
+workspaces/iagd/HookDll/Detours-master/src/disasm.s: workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.s
+
+# target to generate assembly for a file
+workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.s
+
+workspaces/iagd/HookDll/Detours-master/src/image.obj: workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.obj
+
+# target to build an object file
+workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj
+
+workspaces/iagd/HookDll/Detours-master/src/image.i: workspaces/iagd/HookDll/Detours-master/src/image.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.i
+
+# target to preprocess a source file
+workspaces/iagd/HookDll/Detours-master/src/image.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.cpp.i
+
+workspaces/iagd/HookDll/Detours-master/src/image.s: workspaces/iagd/HookDll/Detours-master/src/image.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.s
+
+# target to generate assembly for a file
+workspaces/iagd/HookDll/Detours-master/src/image.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/image.cpp.s
+
+workspaces/iagd/HookDll/Detours-master/src/modules.obj: workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.obj
+
+# target to build an object file
+workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj
+
+workspaces/iagd/HookDll/Detours-master/src/modules.i: workspaces/iagd/HookDll/Detours-master/src/modules.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.i
+
+# target to preprocess a source file
+workspaces/iagd/HookDll/Detours-master/src/modules.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.i
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.cpp.i
+
+workspaces/iagd/HookDll/Detours-master/src/modules.s: workspaces/iagd/HookDll/Detours-master/src/modules.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.s
+
+# target to generate assembly for a file
+workspaces/iagd/HookDll/Detours-master/src/modules.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.s
+.PHONY : workspaces/iagd/HookDll/Detours-master/src/modules.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -499,45 +619,60 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... dinput8"
-	@echo "... BaseMethodHook.o"
+	@echo "... BaseMethodHook.obj"
 	@echo "... BaseMethodHook.i"
 	@echo "... BaseMethodHook.s"
-	@echo "... DataQueue.o"
+	@echo "... DataQueue.obj"
 	@echo "... DataQueue.i"
 	@echo "... DataQueue.s"
-	@echo "... GameEngineUpdate.o"
+	@echo "... GameEngineUpdate.obj"
 	@echo "... GameEngineUpdate.i"
 	@echo "... GameEngineUpdate.s"
-	@echo "... GetPrivateStash.o"
+	@echo "... GetPrivateStash.obj"
 	@echo "... GetPrivateStash.i"
 	@echo "... GetPrivateStash.s"
-	@echo "... GrimTypes.o"
+	@echo "... GrimTypes.obj"
 	@echo "... GrimTypes.i"
 	@echo "... GrimTypes.s"
-	@echo "... HookLog.o"
+	@echo "... HookLog.obj"
 	@echo "... HookLog.i"
 	@echo "... HookLog.s"
-	@echo "... InventorySack_AddItem.o"
+	@echo "... InventorySack_AddItem.obj"
 	@echo "... InventorySack_AddItem.i"
 	@echo "... InventorySack_AddItem.s"
-	@echo "... OnDemandSeedInfo.o"
+	@echo "... OnDemandSeedInfo.obj"
 	@echo "... OnDemandSeedInfo.i"
 	@echo "... OnDemandSeedInfo.s"
-	@echo "... SetHardcore.o"
+	@echo "... SetHardcore.obj"
 	@echo "... SetHardcore.i"
 	@echo "... SetHardcore.s"
-	@echo "... SettingsReader.o"
+	@echo "... SettingsReader.obj"
 	@echo "... SettingsReader.i"
 	@echo "... SettingsReader.s"
-	@echo "... TcpClient.o"
+	@echo "... TcpClient.obj"
 	@echo "... TcpClient.i"
 	@echo "... TcpClient.s"
-	@echo "... dllmain.o"
+	@echo "... dllmain.obj"
 	@echo "... dllmain.i"
 	@echo "... dllmain.s"
-	@echo "... stdafx.o"
+	@echo "... stdafx.obj"
 	@echo "... stdafx.i"
 	@echo "... stdafx.s"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/creatwth.obj"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/creatwth.i"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/creatwth.s"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/detours.obj"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/detours.i"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/detours.s"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/disasm.obj"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/disasm.i"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/disasm.s"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/image.obj"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/image.i"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/image.s"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/modules.obj"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/modules.i"
+	@echo "... workspaces/iagd/HookDll/Detours-master/src/modules.s"
 .PHONY : help
 
 

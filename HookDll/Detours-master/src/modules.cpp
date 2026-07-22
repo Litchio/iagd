@@ -20,7 +20,7 @@
 
 #define _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE 1
 #include <windows.h>
-#if (_MSC_VER < 1310)
+#if (_MSC_VER < 1310) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #else
 #pragma warning(push)
 #if _MSC_VER > 1400

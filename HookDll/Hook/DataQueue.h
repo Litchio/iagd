@@ -2,8 +2,7 @@
 #define DATAQUEUE_H
 
 #include <queue>
-#include <boost/shared_array.hpp>
-#include <boost/thread.hpp>
+#include <memory>
 #include <mutex>
 
 class DataItem {
@@ -15,12 +14,12 @@ public:
 	unsigned int size() const;
 
 private:
-	boost::shared_array<char> m_data;
+	std::unique_ptr<char[]> m_data;
 	unsigned int m_size;
 	unsigned long m_type;
 };
 
-typedef boost::shared_ptr<DataItem> DataItemPtr;
+typedef std::shared_ptr<DataItem> DataItemPtr;
 
 
 /**

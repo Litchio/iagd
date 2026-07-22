@@ -167,6 +167,8 @@ protected:
     DWORD                   m_cbAlloc;
 };
 
+class CImageImportName; // Forward declaration for GCC compatibility
+
 class CImageImportFile
 {
     friend class CImage;

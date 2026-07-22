@@ -1,11 +1,11 @@
 #include "stdafx.h"
+#include <codecvt> // wstring_convert - must come before detours.h
 #include <stdio.h>
 #include <stdlib.h>
 #include "MessageType.h"
 #include <detours.h>
 #include "GetPrivateStash.h"
 #include "Exports.h"
-#include <codecvt> // wstring_convert
 #include "Logger.h"
 #include "GrimTypes.h"
 

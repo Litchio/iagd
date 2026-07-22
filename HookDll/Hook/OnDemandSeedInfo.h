@@ -5,8 +5,10 @@
 #include "BaseMethodHook.h"
 #include <string>
 #include <thread>
-#include <boost/property_tree/ptree.hpp>             
+#include <memory>
 #include <mutex>
+#include <atomic>
+#include "nlohmann/json.hpp"
 
 #include "GrimTypes.h"
 
@@ -17,7 +19,7 @@ struct ParsedSeedRequest {
 	std::string buddyItemId;
 	bool isRelic;
 };
-typedef boost::shared_ptr<ParsedSeedRequest> ParsedSeedRequestPtr;
+typedef std::shared_ptr<ParsedSeedRequest> ParsedSeedRequestPtr;
 
 
 class OnDemandSeedInfo : public BaseMethodHook {
@@ -44,7 +46,7 @@ protected:
 	std::atomic<int> m_sleepMilliseconds;
 
 	// Game interaction
-	boost::property_tree::ptree GetItemInfo(ParsedSeedRequest obj);
+	nlohmann::json GetItemInfo(ParsedSeedRequest obj);
 	typedef void(__fastcall* pItemEquipmentGetUIDisplayText)(GAME::ItemEquipment*, GAME::Character* myCharacter, std::vector<GAME::GameTextLine>* text, bool includeSetBonusDetails); // If false, we'll get a "click here for more info" text instead.
 	static pItemEquipmentGetUIDisplayText fnItemEquipmentGetUIDisplayText;
 	static pItemEquipmentGetUIDisplayText fnItemRelicGetUIDisplayText;

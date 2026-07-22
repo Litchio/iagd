@@ -5,14 +5,12 @@
 #include "InventorySack_AddItem.h"
 
 #include <codecvt>
+#include <filesystem>
+#include <fstream>
+#include <algorithm>
 
 #include "Exports.h"
 #include <random>
-#include <boost/property_tree/ptree.hpp>                                        
-#include <boost/property_tree/json_parser.hpp>       
-#include <boost/filesystem.hpp>
-#include <boost/range/iterator_range.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include <iostream>
 #include "Logger.h"
 #include "VTableDispatch.h"
@@ -50,7 +48,7 @@ InventorySack_AddItem::GameEngine_Update InventorySack_AddItem::dll_GameEngine_U
 bool InventorySack_AddItem::m_isTransferStashOpen;
 
 std::set<std::wstring> InventorySack_AddItem::m_depositQueue;
-boost::mutex InventorySack_AddItem::m_mutex;
+std::mutex InventorySack_AddItem::m_mutex;
 
 void InventorySack_AddItem::EnableHook() {
 	VTableDispatch::Init();
@@ -123,7 +121,7 @@ InventorySack_AddItem::InventorySack_AddItem(DataQueue* dataQueue, HANDLE hEvent
 	m_storageFolder = GetIagdFolder() + L"itemqueue\\ingoing\\";
 	LogToFile(LogLevel::INFO, L"Storing instaloot items into " + m_storageFolder);
 
-	boost::filesystem::create_directories(m_storageFolder);
+	std::filesystem::create_directories(m_storageFolder);
 	m_settingsReader = SettingsReader();
 	m_stashTabLootFrom = m_settingsReader.GetStashTabToLootFrom();
 	m_stashTabDepositTo = m_settingsReader.GetStashTabToDepositTo();
@@ -420,7 +418,7 @@ bool InventorySack_AddItem::Persist(
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> utf8conv;
 
 	std::ofstream stream;
-	stream.open(fullPath, std::ios::binary);
+	stream.open(fullPath.c_str(), std::ios::binary);
 
 	// Write UTF-8 BOM so readers can detect encoding
 	stream << "\xEF\xBB\xBF";
@@ -447,7 +445,7 @@ bool InventorySack_AddItem::Persist(
 		std::to_wstring(gameTextLines.size()) + L" stat lines)");
 
 	std::ifstream verification;
-	verification.open(fullPath);
+		verification.open(fullPath.c_str());
 	if (verification) {
 		return true;
 	}
@@ -504,8 +502,8 @@ std::wstring InventorySack_AddItem::GetModName(GAME::GameInfo* gameInfo) {
 	std::wstring modName;
 	if (fnGetGameInfoMode(gameInfo) != 1) { // Skip mod name if we're in Crucible, we don't treat that as a mod.
 		fnGetModNameArg(gameInfo, &modName);
-		modName.erase(std::remove(modName.begin(), modName.end(), '\r'), modName.end());
-		modName.erase(std::remove(modName.begin(), modName.end(), '\n'), modName.end());
+		modName.erase(std::remove(modName.begin(), modName.end(), L'\r'), modName.end());
+		modName.erase(std::remove(modName.begin(), modName.end(), L'\n'), modName.end());
 	}
 
 	return modName;
@@ -541,8 +539,8 @@ bool InventorySack_AddItem::IsSackToLootFrom(void* stashTab, GAME::GameEngine* g
 	}
 	else {
 		// m_stashTabLootFrom is index from 1, we never want to go <0 nor >= size.
-		toLootFrom = max(0,
-			min(sacks->size() - 1, m_stashTabLootFrom - 1)
+		toLootFrom = (size_t)std::max((size_t)0,
+			std::min(sacks->size() - 1, (size_t)(m_stashTabLootFrom - 1))
 		);
 	}
 
@@ -609,8 +607,6 @@ bool InventorySack_AddItem::HandleItem(void* stash, GAME::Item* item) {
 /// <param name="isHardcore"></param>
 /// <returns></returns>
 std::wstring GetFolderToLootFrom(std::wstring modName, bool isHardcore) {
-	boost::property_tree::wptree loadPtreeRoot;
-
 	std::wstring folder;
 	if (modName.empty()) {
 		folder = GetIagdFolder() + L"itemqueue\\outgoing\\" + (isHardcore ? L"hc" : L"sc");
@@ -619,8 +615,8 @@ std::wstring GetFolderToLootFrom(std::wstring modName, bool isHardcore) {
 		folder = GetIagdFolder() + L"itemqueue\\outgoing\\" + (isHardcore ? L"hc" : L"sc") + L"\\" + modName;
 	}
 
-	if (!boost::filesystem::is_directory(folder)) {
-		boost::filesystem::create_directories(folder);
+	if (!std::filesystem::is_directory(folder)) {
+		std::filesystem::create_directories(folder);
 	}
 
 	return folder;
@@ -634,8 +630,6 @@ std::wstring GetFolderToLootFrom(std::wstring modName, bool isHardcore) {
 /// <param name="isHardcore"></param>
 /// <returns></returns>
 std::wstring GetFolderToMoveTo(std::wstring modName, bool isHardcore) {
-	boost::property_tree::wptree loadPtreeRoot;
-
 	std::wstring folder;
 	if (modName.empty()) {
 		folder = GetIagdFolder() + L"itemqueue\\deleted\\" + (isHardcore ? L"hc" : L"sc");
@@ -644,8 +638,8 @@ std::wstring GetFolderToMoveTo(std::wstring modName, bool isHardcore) {
 		folder = GetIagdFolder() + L"itemqueue\\deleted\\" + (isHardcore ? L"hc" : L"sc") + L"\\" + modName;
 	}
 
-	if (!boost::filesystem::is_directory(folder)) {
-		boost::filesystem::create_directories(folder);
+	if (!std::filesystem::is_directory(folder)) {
+		std::filesystem::create_directories(folder);
 	}
 
 	return folder;
@@ -658,7 +652,7 @@ std::wstring GetFolderToMoveTo(std::wstring modName, bool isHardcore) {
 /// <returns></returns>
 GAME::ItemReplicaInfo* InventorySack_AddItem::ReadReplicaInfo(const std::wstring& filename) {
 	try {
-		std::ifstream file(filename);
+		std::ifstream file(filename.c_str());
 		return GAME::Deserialize(GAME::GetNextLineAndSplitIntoTokens(file));
 	}
 	catch (std::exception& ex) {
@@ -705,8 +699,8 @@ GAME::InventorySack* InventorySack_AddItem::GetSackToDepositTo(GAME::GameEngine*
 	}
 	else {
 		// m_stashTabLootFrom is index from 1, we never want to go <0 nor >= size.
-		toDepositTo = max(0,
-			min(sacks->size() - 1, m_stashTabDepositTo - 1)
+		toDepositTo = (size_t)std::max((size_t)0,
+			std::min(sacks->size() - 1, (size_t)(m_stashTabDepositTo - 1))
 		);
 	}
 
@@ -757,14 +751,14 @@ void* __fastcall InventorySack_AddItem::Hooked_GameEngine_Update(void* This, int
 		GAME::GameInfo* gameInfo = fnGetGameInfo(engine);
 		if (gameInfo == nullptr) {
 			LogToFile(LogLevel::WARNING, L"GameInfo is null, aborting..");
-			return false;
+			return dll_GameEngine_Update(This, v);
 		}
 
 		if (m_isTransferStashOpen) {
 			void* sackPtr = GetSackToDepositTo((GAME::GameEngine*)This);
 			if (sackPtr != nullptr) {
 				GAME::Rect itemPosition;
-				boost::lock_guard<boost::mutex> guard(m_mutex);
+				std::lock_guard<std::mutex> guard(m_mutex);
 
 
 				bool success = false;
@@ -878,12 +872,12 @@ void InventorySack_AddItem::ThreadMain(void*) {
 			std::wstring folder = GetFolderToLootFrom(GetModName(gameInfo), fnGetHardcore(gameInfo, true));
 			// LogToFile(std::wstring(L"Looking for files in dir: ") + folder);
 
-			for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(folder), {})) {
+			for (auto& entry : std::filesystem::directory_iterator(folder)) {
 				auto filename = std::wstring(entry.path().c_str());
 				if (knownFiles.find(filename) == knownFiles.end()) {
-					boost::lock_guard<boost::mutex> guard(m_mutex);
+					std::lock_guard<std::mutex> guard(m_mutex);
 
-					if (boost::algorithm::ends_with(filename, ".csv")) {
+					if (filename.size() >= 4 && filename.substr(filename.size() - 4) == L".csv") {
 						LogToFile(LogLevel::INFO, std::wstring(L"Found file: ") + std::wstring(entry.path().c_str()));
 						m_depositQueue.insert(filename);
 					}

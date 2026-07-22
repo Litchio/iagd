@@ -1,109 +1,77 @@
 #include "SettingsReader.h"
-#include <boost/property_tree/ptree.hpp>                                        
-#include <boost/property_tree/json_parser.hpp>       
-#include <boost/optional/optional.hpp>
+#include "nlohmann/json.hpp"
 #include "Logger.h"
+#include <fstream>
+#include <codecvt>
 
 std::wstring GetIagdFolder();
 
-
+// Helper: load and parse settings.json, returns empty object on failure
+static nlohmann::json LoadSettingsJson() {
+	std::wstring settingsJson = GetIagdFolder() + L"settings.json";
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+	std::ifstream file(conv.to_bytes(settingsJson));
+	if (!file.is_open()) {
+		return nlohmann::json{};
+	}
+	try {
+		nlohmann::json root;
+		file >> root;
+		return root;
+	}
+	catch (...) {
+		return nlohmann::json{};
+	}
+}
 
 int SettingsReader::GetStashTabToLootFrom() {
-	boost::property_tree::wptree loadPtreeRoot;
-
-	const auto settingsJson = GetIagdFolder() + L"settings.json";
-	std::wifstream json(settingsJson);
-
-	boost::property_tree::read_json(json, loadPtreeRoot);
-	auto child = loadPtreeRoot.get_child_optional(L"local.stashToLootFrom");
-	if (!child)
-	{
+	auto root = LoadSettingsJson();
+	if (!root.contains("local") || !root["local"].contains("stashToLootFrom")) {
 		LogToFile(LogLevel::WARNING, L"No \"loot from\" configuration found, defaulting to last stash tab");
 		return 0;
 	}
-
-	const int stashToLootFrom = loadPtreeRoot.get<int>(L"local.stashToLootFrom");
-
-
+	const int stashToLootFrom = root["local"]["stashToLootFrom"].get<int>();
 	if (stashToLootFrom == 0) {
 		LogToFile(LogLevel::INFO, L"Configured to loot from last stash tab");
-
-	}
-	else {
+	} else {
 		LogToFile(LogLevel::INFO, L"Configured to loot from tab: " + std::to_wstring(stashToLootFrom));
 	}
-
 	return stashToLootFrom;
 }
 
 int SettingsReader::GetStashTabToDepositTo() {
-	boost::property_tree::wptree loadPtreeRoot;
-
-	const auto settingsJson = GetIagdFolder() + L"settings.json";
-	std::wifstream json(settingsJson);
-
-	boost::property_tree::read_json(json, loadPtreeRoot);
-	auto child = loadPtreeRoot.get_child_optional(L"local.stashToDepositTo");
-	if (!child)
-	{
+	auto root = LoadSettingsJson();
+	if (!root.contains("local") || !root["local"].contains("stashToDepositTo")) {
 		LogToFile(LogLevel::WARNING, L"No \"deposit to\" configuration found, defaulting to second-to-last stash tab");
 		return 0;
 	}
-
-	const int stashToDepositTo = loadPtreeRoot.get<int>(L"local.stashToDepositTo");
-
-
+	const int stashToDepositTo = root["local"]["stashToDepositTo"].get<int>();
 	if (stashToDepositTo == 0) {
 		LogToFile(LogLevel::INFO, L"Configured to deposit to last stash tab");
-
-	}
-	else {
+	} else {
 		LogToFile(LogLevel::INFO, L"Configured to deposit to tab: " + std::to_wstring(stashToDepositTo));
 	}
-
 	return stashToDepositTo;
 }
 
-
-
-
 bool SettingsReader::GetIsGrimDawnParsed() {
-	boost::property_tree::wptree loadPtreeRoot;
-
-	const auto settingsJson = GetIagdFolder() + L"settings.json";
-	std::wifstream json(settingsJson);
-
-
-	boost::property_tree::read_json(json, loadPtreeRoot);
-	auto child = loadPtreeRoot.get_child_optional(L"local.isGrimDawnParsed");
-	if (!child)
-	{
+	auto root = LoadSettingsJson();
+	if (!root.contains("local") || !root["local"].contains("isGrimDawnParsed")) {
 		LogToFile(LogLevel::WARNING, L"GrimDawnParsed: No configuration found, defaulting to NOT parsed");
 		return false;
 	}
-
-	const bool isGdParsed = loadPtreeRoot.get<bool>(L"local.isGrimDawnParsed");
+	const bool isGdParsed = root["local"]["isGrimDawnParsed"].get<bool>();
 	LogToFile(LogLevel::INFO, std::wstring(L"Grim Dawn parsed: ") + (isGdParsed ? L"True" : L"False"));
-
 	return isGdParsed;
 }
 
 bool SettingsReader::GetIsRunningInWine() {
-	boost::property_tree::wptree loadPtreeRoot;
-
-	const auto settingsJson = GetIagdFolder() + L"settings.json";
-	std::wifstream json(settingsJson);
-
-	boost::property_tree::read_json(json, loadPtreeRoot);
-	auto child = loadPtreeRoot.get_child_optional(L"persistent.isRunningInWine");
-	if (!child)
-	{
+	auto root = LoadSettingsJson();
+	if (!root.contains("persistent") || !root["persistent"].contains("isRunningInWine")) {
 		LogToFile(LogLevel::WARNING, L"RunningInWine: No configuration found, defaulting to false");
 		return false;
 	}
-
-	const bool isWine = loadPtreeRoot.get<bool>(L"persistent.isRunningInWine");
+	const bool isWine = root["persistent"]["isRunningInWine"].get<bool>();
 	LogToFile(LogLevel::INFO, std::wstring(L"Running in Wine: ") + (isWine ? L"True" : L"False"));
-
 	return isWine;
 }

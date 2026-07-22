@@ -2,15 +2,13 @@
 #include <stdio.h>
 #include <random>
 #include <stdlib.h>
+#include <fstream>
 #include "MessageType.h"
 #include "OnDemandSeedInfo.h"
 #include "Exports.h"
-#include <codecvt> // wstring_convert                           
-#include <boost/property_tree/json_parser.hpp>       
-#include <boost/filesystem.hpp>
-#include <boost/range/iterator_range.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string.hpp> 
+#include <codecvt>
+#include <filesystem>
+#include "nlohmann/json.hpp"
 #include "VTableDispatch.h"
 
 #include "Logger.h"
@@ -184,7 +182,8 @@ ParsedSeedRequest* OnDemandSeedInfo::DeserializeReplicaCsv(std::vector<std::stri
 	item.enchantmentRecord = tokens.at(idx++);
 	item.transmuteRecord = tokens.at(idx++);
 
-	if (isNewDlc) {
+
+		if (isNewDlc) {
 		auto ascendantAffixNameRecord  = tokens.at(idx++);
 		auto ascendantAffix2hNameRecord= tokens.at(idx++);
 	}
@@ -193,15 +192,19 @@ ParsedSeedRequest* OnDemandSeedInfo::DeserializeReplicaCsv(std::vector<std::stri
 	for (auto it = tokens.begin(); it != tokens.end(); ++it) {
 		s = s + *it + ";";
 	}
-	//LogToFile(LogLevel::INFO, "READ: " + s);
-	
-	boost::algorithm::trim(item.baseRecord);
-	boost::algorithm::trim(item.prefixRecord);
-	boost::algorithm::trim(item.suffixRecord);
-	boost::algorithm::trim(item.modifierRecord);
-	boost::algorithm::trim(item.materiaRecord);
-	boost::algorithm::trim(item.enchantmentRecord);
-	boost::algorithm::trim(item.transmuteRecord);
+
+	// Trim whitespace from string fields
+	auto trim = [](std::string& str) {
+		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isspace(c); }));
+		str.erase(std::find_if(str.rbegin(), str.rend(), [](unsigned char c) { return !std::isspace(c); }).base(), str.end());
+	};
+	trim(item.baseRecord);
+	trim(item.prefixRecord);
+	trim(item.suffixRecord);
+	trim(item.modifierRecord);
+	trim(item.materiaRecord);
+	trim(item.enchantmentRecord);
+	trim(item.transmuteRecord);
 	// TODO: !! Trip ascendant records
 
 	result->itemReplicaInfo = item;
@@ -220,7 +223,7 @@ ParsedSeedRequest* OnDemandSeedInfo::DeserializeReplicaCsv(std::vector<std::stri
 /// <returns></returns>
 ParsedSeedRequest* OnDemandSeedInfo::ReadReplicaInfo(const std::wstring& filename) {
 	try {
-		std::ifstream file(filename);
+		std::ifstream file(filename.c_str());
 		return DeserializeReplicaCsv(GAME::GetNextLineAndSplitIntoTokens(file));
 	}
 	catch (std::exception& ex) {
@@ -244,8 +247,6 @@ ParsedSeedRequest* OnDemandSeedInfo::ReadReplicaInfo(const std::wstring& filenam
 /// <param name="isHardcore"></param>
 /// <returns></returns>
 std::wstring GetFolderToReadFrom(std::wstring modName, bool isHardcore) {
-	boost::property_tree::wptree loadPtreeRoot;
-
 	std::wstring folder;
 	if (modName.empty()) {
 		folder = GetIagdFolder() + L"replica\\from_ia";
@@ -254,8 +255,8 @@ std::wstring GetFolderToReadFrom(std::wstring modName, bool isHardcore) {
 		folder = GetIagdFolder() + L"replica\\from_ia\\" + modName;
 	}
 
-	if (!boost::filesystem::is_directory(folder)) {
-		boost::filesystem::create_directories(folder);
+	if (!std::filesystem::is_directory(folder)) {
+		std::filesystem::create_directories(folder);
 	}
 
 	return folder;
@@ -277,7 +278,7 @@ std::wstring OnDemandSeedInfo::GetModName(GAME::GameInfo* gameInfo) {
 */
 void OnDemandSeedInfo::Process() {
 	try {
-		boost::filesystem::create_directories(GetIagdFolder() + L"replica\\to_ia\\");
+		std::filesystem::create_directories(GetIagdFolder() + L"replica\\to_ia\\");
 
 		while (m_isActive) {
 			Sleep(500);
@@ -296,10 +297,10 @@ void OnDemandSeedInfo::Process() {
 
 			std::wstring folder = GetFolderToReadFrom(GetModName(gameInfo), fnGetHardcore(gameInfo, true));
 
-			for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(folder), {})) {
+			for (auto& entry : std::filesystem::directory_iterator(folder)) {
 				auto filename = std::wstring(entry.path().c_str());
 
-				if (boost::algorithm::ends_with(filename, ".csv")) {
+				if (filename.size() >= 4 && filename.substr(filename.size() - 4) == L".csv") {
 					LogToFile(LogLevel::INFO, std::wstring(L"Queued file: ") + std::wstring(entry.path().c_str()));
 
 					ParsedSeedRequest* obj = ReadReplicaInfo(entry.path().c_str());
@@ -341,44 +342,41 @@ std::string toString(std::wstring s) {
 }
 
 
-boost::property_tree::ptree toJson(ParsedSeedRequest obj, std::vector<GAME::GameTextLine>& gameTextLines) {
-	boost::property_tree::ptree root;
-	root.put("playerItemId", obj.playerItemId);
-	root.put("buddyItemId", obj.buddyItemId.c_str());
+nlohmann::json toJson(ParsedSeedRequest obj, std::vector<GAME::GameTextLine>& gameTextLines) {
+	nlohmann::json root;
+	root["playerItemId"] = obj.playerItemId;
+	root["buddyItemId"] = obj.buddyItemId;
 
 	// Completely redundant information, might help others to use this DLL.
-	boost::property_tree::ptree replica;
-	replica.put("baseRecord", obj.itemReplicaInfo.baseRecord);
-	replica.put("prefixRecord", obj.itemReplicaInfo.prefixRecord);
-	replica.put("suffixRecord", obj.itemReplicaInfo.suffixRecord);
-	replica.put("modifierRecord", obj.itemReplicaInfo.modifierRecord);
-	replica.put("transmuteRecord", obj.itemReplicaInfo.transmuteRecord);
-	replica.put("seed", obj.itemReplicaInfo.seed);
-	replica.put("materiaRecord", obj.itemReplicaInfo.materiaRecord);
-	replica.put("relicBonus", obj.itemReplicaInfo.relicBonus);
-	replica.put("relicSeed", obj.itemReplicaInfo.relicSeed);
-	replica.put("enchantmentRecord", obj.itemReplicaInfo.enchantmentRecord);
-	replica.put("enchantmentSeed", obj.itemReplicaInfo.enchantmentSeed);
-	root.add_child("replica", replica);
+	nlohmann::json replica;
+	replica["baseRecord"] = obj.itemReplicaInfo.baseRecord;
+	replica["prefixRecord"] = obj.itemReplicaInfo.prefixRecord;
+	replica["suffixRecord"] = obj.itemReplicaInfo.suffixRecord;
+	replica["modifierRecord"] = obj.itemReplicaInfo.modifierRecord;
+	replica["transmuteRecord"] = obj.itemReplicaInfo.transmuteRecord;
+	replica["seed"] = obj.itemReplicaInfo.seed;
+	replica["materiaRecord"] = obj.itemReplicaInfo.materiaRecord;
+	replica["relicBonus"] = obj.itemReplicaInfo.relicBonus;
+	replica["relicSeed"] = obj.itemReplicaInfo.relicSeed;
+	replica["enchantmentRecord"] = obj.itemReplicaInfo.enchantmentRecord;
+	replica["enchantmentSeed"] = obj.itemReplicaInfo.enchantmentSeed;
+	root["replica"] = replica;
 	// TODO: ascendant changes here, not critical, not used by IAGD
 
-
-	boost::property_tree::ptree stats;
+	nlohmann::json stats = nlohmann::json::array();
 	for (auto& it : gameTextLines) {
-		boost::property_tree::ptree stat;
-
-		stat.put<std::string>("text", toString(it.text));
-		stat.put("type", it.textClass);
-		stats.push_back(std::make_pair("", stat));
+		nlohmann::json stat;
+		stat["text"] = toString(it.text);
+		stat["type"] = it.textClass;
+		stats.push_back(stat);
 	}
-
-	root.add_child("stats", stats);
+	root["stats"] = stats;
 
 	return root;
 }
 
 // TODO: Either rename, or make this method do less. Probably the latter
-boost::property_tree::ptree OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj) {
+nlohmann::json OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj) {
 	// Check for access to Game.dll
 	if (GetModuleHandleA("Game.dll")) {
 		GAME::ItemReplicaInfo replica = obj.itemReplicaInfo;
@@ -392,7 +390,7 @@ boost::property_tree::ptree OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj)
 				DataItemPtr item(new DataItem(TYPE_ITEMSEEDDATA_PLAYERID_ERR_NOGAME, 0, nullptr));
 				m_dataQueue->push(item);
 				SetEvent(m_hEvent);
-				return boost::property_tree::ptree();
+				return nlohmann::json{};
 			}
 
 			GAME::Character* character = (GAME::Character*)fnGetMainPlayer(gameEngine);
@@ -401,12 +399,8 @@ boost::property_tree::ptree OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj)
 				DataItemPtr item(new DataItem(TYPE_ITEMSEEDDATA_PLAYERID_ERR_NOGAME, 0, nullptr));
 				m_dataQueue->push(item);
 				SetEvent(m_hEvent);
-				return boost::property_tree::ptree();
+				return nlohmann::json{};
 			}
-
-			// TODO: We should fetch this earlier, ensure we don't get the hooked method. -- We seem to be getting 4 replies. 4th one is the message below. 
-			// First is probably in Item:: then ItemEquipment:: (both have hooks), 
-			// Sender is responsible for ensuring that this is NOT as set item, not a potion/scroll/other and not a relic. Eg must be equipment which is not part of a set.
 
 			if (obj.isRelic) {
 				fnItemRelicGetUIDisplayText((GAME::ItemEquipment*)newItem, character, &gameTextLines, true);
@@ -414,10 +408,8 @@ boost::property_tree::ptree OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj)
 			else {
 				fnItemEquipmentGetUIDisplayText((GAME::ItemEquipment*)newItem, character, &gameTextLines, true);
 			}
-			
 
 			fnDestroyObjectEx(fnGetObjectManager(), (GAME::Object*)newItem, nullptr, 0);
-
 
 			LogToFile(LogLevel::INFO, L"Generating json..");
 
@@ -436,7 +428,7 @@ boost::property_tree::ptree OnDemandSeedInfo::GetItemInfo(ParsedSeedRequest obj)
 		SetEvent(m_hEvent);
 	}
 
-	return boost::property_tree::ptree();
+	return nlohmann::json{};
 }
 
 
@@ -479,7 +471,7 @@ void* __fastcall OnDemandSeedInfo::Hooked_Engine_Render(void* This) {
 				// Process the queue
 				int num = 0;
 
-				boost::property_tree::ptree result;
+				nlohmann::json result = nlohmann::json::array();
 
 				std::unique_lock<std::mutex> lock(g_self->_mutex, std::try_to_lock);
 				// No point arguing over a lock. We can parse this later.
@@ -495,10 +487,9 @@ void* __fastcall OnDemandSeedInfo::Hooked_Engine_Render(void* This) {
 					ParsedSeedRequest obj = *ptr.get();
 
 					LogToFile(LogLevel::INFO, L"Fetching items stats for " + GAME::Serialize(obj.itemReplicaInfo));
-					boost::property_tree::ptree json = g_self->GetItemInfo(obj);
-					if (!json.empty()) {
-						std::string id = std::to_string(obj.playerItemId) + obj.buddyItemId;
-						result.push_back(std::make_pair(id, json));
+					nlohmann::json json = g_self->GetItemInfo(obj);
+					if (!json.is_null() && !json.empty()) {
+						result.push_back(json);
 					}
 				}
 
@@ -506,14 +497,12 @@ void* __fastcall OnDemandSeedInfo::Hooked_Engine_Render(void* This) {
 					// Write json array
 					std::wstring fullPath = GetIagdFolder() + L"replica\\to_ia\\" + randomFilename32();
 
-
-					std::stringstream json;
-					boost::property_tree::write_json(json, result);
+					std::string jsonStr = result.dump();
 
 					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 					std::wofstream stream;
-					stream.open(fullPath);
-					stream << json.str().c_str();
+					stream.open(fullPath.c_str());
+					stream << jsonStr.c_str();
 					stream.flush();
 					stream.close();
 					LogToFile(LogLevel::INFO, L"Wrote items stats to " + fullPath);

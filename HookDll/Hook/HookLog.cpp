@@ -32,7 +32,7 @@ HookLog::HookLog() : m_lastMessageCount(0), m_initialized(false) {
     std::wstring logFile(!iagdFolder.empty() ? iagdFolder : tmpfolder);
     logFile += L"iagd_hook.log"; 
 
-    m_out.open(logFile);
+    m_out.open(logFile.c_str());
 
     if (m_out.is_open()) {
         m_out

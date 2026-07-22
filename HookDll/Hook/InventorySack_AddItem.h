@@ -37,7 +37,7 @@ private:
 
 	static bool m_isTransferStashOpen;
 	static std::set<std::wstring> m_depositQueue;
-	static boost::mutex m_mutex;
+	static std::mutex m_mutex;
 
 
 	// Hook typedefs

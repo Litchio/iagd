@@ -66,7 +66,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 
-#if (_MSC_VER < 1299)
+#if (_MSC_VER < 1299) && !defined(__MINGW32__) && !defined(__MINGW64__)
 typedef LONG LONG_PTR;
 typedef ULONG ULONG_PTR;
 #endif
@@ -794,7 +794,7 @@ VOID CALLBACK DetourFinishHelperProcess(_In_ HWND,
 
 //////////////////////////////////////////////////////////////////////////////
 //
-#if (_MSC_VER < 1299)
+#if (_MSC_VER < 1299) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <imagehlp.h>
 typedef IMAGEHLP_MODULE IMAGEHLP_MODULE64;
 typedef PIMAGEHLP_MODULE PIMAGEHLP_MODULE64;

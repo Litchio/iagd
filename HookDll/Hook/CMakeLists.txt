@@ -1,26 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
+# Cross-compilation toolchain is set via: cmake -DCMAKE_TOOLCHAIN_FILE=../mingw64-toolchain.cmake ..
 project(dinput8 CXX)
-
-# Detect cross-compilation to Windows
-set(CMAKE_SYSTEM_NAME Windows)
-set(CMAKE_SYSTEM_PROCESSOR x86_64)
-
-# Use MinGW-w64 cross-compiler
-set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
-set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
-set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Find required packages
-find_package(Boost 1.64 QUIET COMPONENTS system thread)
-
-if(NOT Boost_FOUND)
-    message(WARNING "Boost not found for MinGW. Attempting compilation without Boost linking.")
-    message(WARNING "You will need to build Boost for MinGW cross-compilation separately.")
-endif()
 
 # Detours include path
 set(DETOURS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Detours-master/include")
@@ -28,6 +12,22 @@ set(DETOURS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Detours-master/src")
 
 # Note: We're using the Detours headers but not compiling from source due to MinGW incompatibility
 # The Detours functionality will be linked at runtime via the Windows SDK
+
+# Detours source files compiled into the DLL (requires MinGW SEH compat shim)
+set(DETOURS_SOURCES
+    ${DETOURS_SRC_DIR}/detours.cpp
+    ${DETOURS_SRC_DIR}/disasm.cpp
+    ${DETOURS_SRC_DIR}/image.cpp
+    ${DETOURS_SRC_DIR}/modules.cpp
+    ${DETOURS_SRC_DIR}/creatwth.cpp
+)
+
+# Force-include MinGW __try/__except compatibility header for each Detours source
+foreach(DETOURS_FILE ${DETOURS_SOURCES})
+    set_source_files_properties(${DETOURS_FILE} PROPERTIES
+        COMPILE_FLAGS "-include ${DETOURS_SRC_DIR}/detours_mingw_compat.h"
+    )
+endforeach()
 
 # Source files for dinput8.dll
 set(HOOK_SOURCES
@@ -68,15 +68,14 @@ set(HOOK_HEADERS
     stdafx.h
 )
 
-# Create DLL target
-add_library(dinput8 SHARED ${HOOK_SOURCES} ${HOOK_HEADERS})
+# Create DLL target (includes both hook sources and Detours compiled from source)
+add_library(dinput8 SHARED ${HOOK_SOURCES} ${DETOURS_SOURCES} ${HOOK_HEADERS})
 
-# Include directories - add explicit Boost path from Linux system
+# Include directories
 target_include_directories(dinput8 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../Shared
     ${DETOURS_SRC_DIR}
-    /usr/include  # For Boost headers (fallback for cross-compilation)
 )
 
 # Link libraries
@@ -90,24 +89,19 @@ target_link_libraries(dinput8 PRIVATE
     advapi32
 )
 
-if(Boost_FOUND)
-    target_link_libraries(dinput8 PRIVATE ${Boost_LIBRARIES})
-    target_include_directories(dinput8 PRIVATE ${Boost_INCLUDE_DIRS})
-    message(STATUS "Boost libraries linked: ${Boost_LIBRARIES}")
-else()
-    message(STATUS "Boost not linked - will need separate configuration")
-endif()
-
 # Compiler flags for Windows DLL
 target_compile_options(dinput8 PRIVATE
     -Wall
     -m64
     -fPIC
     -D_X64_
+    -D_AMD64_
     -D_WINDOWS
     -D_WIN64
+    -DUNICODE
+    -D_UNICODE
     -Wno-multichar
-    -I/usr/include  # Add system include path for Boost headers
+    -fpermissive
 )
 
 # Linker flags for Windows DLL
@@ -141,8 +135,4 @@ install(TARGETS dinput8
 )
 
 message(STATUS "Building dinput8.dll for Windows x64")
-if(Boost_FOUND)
-    message(STATUS "Boost Include: ${Boost_INCLUDE_DIRS}")
-endif()
 message(STATUS "Detours Headers: ${DETOURS_SRC_DIR}")
-message(STATUS "Cross-compiler: ${CMAKE_CXX_COMPILER}")

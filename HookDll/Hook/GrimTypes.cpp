@@ -1,11 +1,10 @@
 #include "GrimTypes.h"
 #include "Logger.h"
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <Windows.h>
+#include <windows.h>
 #include <fstream>
 
 namespace GAME {
