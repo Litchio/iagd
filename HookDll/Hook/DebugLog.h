@@ -58,8 +58,23 @@ namespace GdiaDebugLog {
 
 	inline void WriteRaw(const char* line, size_t len) {
 		EnterCriticalSection(&Lock());
+		// Try the primary path (next to the DLL), then %TEMP%, then C:\.
+		// Guarantees we get a signal even if the game folder is not writable.
 		HANDLE h = CreateFileA(Path(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
 			NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (h == INVALID_HANDLE_VALUE) {
+			char tmp[MAX_PATH];
+			DWORD n = GetTempPathA(MAX_PATH, tmp);
+			if (n > 0 && n < MAX_PATH - 20) {
+				lstrcatA(tmp, "dinput8_debug.log");
+				h = CreateFileA(tmp, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
+					NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			}
+		}
+		if (h == INVALID_HANDLE_VALUE) {
+			h = CreateFileA("C:\\dinput8_debug.log", FILE_APPEND_DATA,
+				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		}
 		if (h != INVALID_HANDLE_VALUE) {
 			DWORD written = 0;
 			WriteFile(h, line, (DWORD)len, &written, NULL);
