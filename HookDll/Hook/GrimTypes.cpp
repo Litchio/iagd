@@ -1,5 +1,6 @@
 #include "GrimTypes.h"
 #include "Logger.h"
+#include "DebugLog.h"
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -165,7 +166,12 @@ namespace GAME {
 /// </summary>
 /// <returns></returns>
 GAME::GameEngine* fnGetGameEngine() {
-	auto gameEngine = (GAME::GameEngine*)*(DWORD_PTR*)GetProcAddressOrLogToFile(L"game.dll", "?gGameEngine@GAME@@3PEAVGameEngine@1@EA");
+	void* addr = GetProcAddressOrLogToFile(L"game.dll", "?gGameEngine@GAME@@3PEAVGameEngine@1@EA");
+	if (addr == nullptr) {
+		// game.dll not loaded yet (or export missing) - MUST NOT dereference.
+		return nullptr;
+	}
+	auto gameEngine = (GAME::GameEngine*)*(DWORD_PTR*)addr;
 	if (gameEngine == nullptr) {
 		LogToFile(LogLevel::WARNING, "Got game engine nullptr, beware if a crash follows this.");
 	}
@@ -177,7 +183,12 @@ GAME::GameEngine* fnGetGameEngine() {
 /// </summary>
 /// <returns></returns>
 GAME::Engine* fnGetEngine(bool skipLog) {
-	auto engine = (GAME::Engine*)*(DWORD_PTR*)GetProcAddressOrLogToFile(L"engine.dll", "?gEngine@GAME@@3PEAVEngine@1@EA", skipLog);
+	void* addr = GetProcAddressOrLogToFile(L"engine.dll", "?gEngine@GAME@@3PEAVEngine@1@EA", skipLog);
+	if (addr == nullptr) {
+		// engine.dll not loaded yet (or export missing) - MUST NOT dereference.
+		return nullptr;
+	}
+	auto engine = (GAME::Engine*)*(DWORD_PTR*)addr;
 	if (engine == nullptr) {
 		LogToFile(LogLevel::WARNING, "Got engine nullptr, beware if a crash follows this.");
 	}
@@ -186,6 +197,10 @@ GAME::Engine* fnGetEngine(bool skipLog) {
 
 bool fnGetHardcore(GAME::GameInfo* gameInfo, bool skipLog) {
 	pGetHardcore f = pGetHardcore(GetProcAddressOrLogToFile(L"engine.dll", "?GetHardcore@GameInfo@GAME@@QEBA_NXZ", skipLog));
+	if (f == nullptr) {
+		LogToFile(LogLevel::WARNING, "fnGetHardcore: export unresolved, defaulting to false");
+		return false;
+	}
 	return f(gameInfo);
 
 }
@@ -193,9 +208,11 @@ bool fnGetHardcore(GAME::GameInfo* gameInfo, bool skipLog) {
 typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > const& Fancystring;
 
 void* GetProcAddressOrLogToFile(const wchar_t* dll, char* procAddress, bool skipLog) {
-	void* originalMethod = GetProcAddress(::GetModuleHandle(dll), procAddress);
+	HMODULE hModule = ::GetModuleHandle(dll);
+	void* originalMethod = hModule ? GetProcAddress(hModule, procAddress) : NULL;
 	if (originalMethod == NULL) {
 		LogToFile(LogLevel::FATAL, std::string("Error finding export from DLL: ") + std::string(procAddress));
+		DBGLOG("GetProcAddress FAILED: module=%ls proc=%s (module handle=%p)", dll, procAddress, (void*)hModule);
 	}
 	else if (!skipLog) {
 		LogToFile(LogLevel::INFO, std::string("Successfully found DLL export: ") + std::string(procAddress));
@@ -205,8 +222,77 @@ void* GetProcAddressOrLogToFile(const wchar_t* dll, char* procAddress, bool skip
 }
 
 
+// ============================================================================
+// Game API pointers - all start NULL, resolved lazily by ResolveGameApi().
+// The old code resolved these in global initializers at CRT init time, which
+// produced NULL pointers (and NULL derefs) whenever Proton loaded this proxy
+// before game.dll/engine.dll.
+// ============================================================================
+ItemGetItemReplicaInfo fnItemGetItemReplicaInfo = nullptr;
+pCreateItem fnCreateItem = nullptr;
+pGetObjectManager fnGetObjectManager = nullptr;
+pDestroyObjectEx fnDestroyObjectEx = nullptr;
+pGetMainPlayer fnGetMainPlayer = nullptr;
+pGetModNameArg fnGetModNameArg = nullptr;
+pGetGameInfoMode fnGetGameInfoMode = nullptr;
+pGetGameInfo fnGetGameInfo = nullptr;
+pPlayDropSound fnPlayDropSound = nullptr;
+pShowCinematicText fnShowCinematicText = nullptr;
+pGetPlayerTransfer fnGetPlayerTransfer = nullptr;
+IsGameLoadingPtr IsGameLoading = nullptr;
+IsGameLoadingPtr IsGameEngineOnline = nullptr;
+IsGameWaitingPtr IsGameWaiting = nullptr;
+SortInventorySackPtr SortInventorySack = nullptr;
 
-IsGameLoadingPtr IsGameLoading = IsGameLoadingPtr(GetProcAddressOrLogToFile(L"game.dll", "?IsGameLoading@GameEngine@GAME@@QEBA_NXZ"));
-IsGameLoadingPtr IsGameEngineOnline = IsGameLoadingPtr(GetProcAddressOrLogToFile(L"game.dll", "?IsGameEngineOnline@GameEngine@GAME@@QEBA_NXZ"));
-IsGameWaitingPtr IsGameWaiting = IsGameWaitingPtr(GetProcAddressOrLogToFile(L"game.dll", "?IsGameWaiting@GameEngine@GAME@@QEAA_N_N@Z"));
-SortInventorySackPtr SortInventorySack = SortInventorySackPtr(GetProcAddressOrLogToFile(L"game.dll", "?Sort@InventorySack@GAME@@QEAA_NI@Z"));
+static bool g_gameApiResolved = false;
+
+bool IsGameApiResolved() {
+	return g_gameApiResolved;
+}
+
+bool ResolveGameApi() {
+	if (g_gameApiResolved) {
+		return true;
+	}
+
+	// GetModuleHandle does NOT load modules - if the game DLLs are not mapped
+	// yet there is nothing to do. The caller (deferred init thread) retries.
+	if (::GetModuleHandleW(L"game.dll") == NULL || ::GetModuleHandleW(L"engine.dll") == NULL) {
+		DBGLOG("ResolveGameApi: game.dll=%p engine.dll=%p - not both loaded yet",
+			(void*)::GetModuleHandleW(L"game.dll"), (void*)::GetModuleHandleW(L"engine.dll"));
+		return false;
+	}
+
+	int failures = 0;
+	auto resolve = [&failures](const wchar_t* dll, char* name) -> void* {
+		void* p = GetProcAddressOrLogToFile(dll, name, true);
+		if (p == nullptr) {
+			failures++;
+			DBGLOG("ResolveGameApi: FAILED to resolve %s from %ls", name, dll);
+		}
+		return p;
+	};
+
+	fnItemGetItemReplicaInfo = ItemGetItemReplicaInfo(resolve(L"game.dll", GET_ITEM_REPLICAINFO));
+	fnCreateItem = pCreateItem(resolve(L"game.dll", "?CreateItem@Item@GAME@@SAPEAV12@AEBUItemReplicaInfo@2@@Z"));
+	fnGetObjectManager = pGetObjectManager(resolve(L"engine.dll", "?Get@?$Singleton@VObjectManager@GAME@@@GAME@@SAPEAVObjectManager@2@XZ"));
+	fnDestroyObjectEx = pDestroyObjectEx(resolve(L"engine.dll", "?DestroyObjectEx@ObjectManager@GAME@@QEAAXPEAVObject@2@PEBDH@Z"));
+	fnGetMainPlayer = pGetMainPlayer(resolve(L"game.dll", "?GetMainPlayer@GameEngine@GAME@@QEBAPEAVPlayer@2@XZ"));
+	fnGetModNameArg = pGetModNameArg(resolve(L"engine.dll", "?GetModName@GameInfo@GAME@@QEAAXAEAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@@Z"));
+	fnGetGameInfoMode = pGetGameInfoMode(resolve(L"engine.dll", "?GetMode@GameInfo@GAME@@QEBAIXZ"));
+	fnGetGameInfo = pGetGameInfo(resolve(L"engine.dll", "?GetGameInfo@Engine@GAME@@QEAAPEAVGameInfo@2@XZ"));
+	fnPlayDropSound = pPlayDropSound(resolve(L"game.dll", "?PlayDropSound@Item@GAME@@UEAAXXZ"));
+	fnShowCinematicText = pShowCinematicText(resolve(L"engine.dll", "?ShowCinematicText@Engine@GAME@@QEAAXAEBV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@0W4CinematicTextType@2@AEBVColor@2@_N@Z"));
+	fnGetPlayerTransfer = pGetPlayerTransfer(resolve(L"game.dll", "?GetPlayerTransfer@GameEngine@GAME@@QEAAAEAV?$vector@PEAVInventorySack@GAME@@@mem@@XZ"));
+	IsGameLoading = IsGameLoadingPtr(resolve(L"game.dll", "?IsGameLoading@GameEngine@GAME@@QEBA_NXZ"));
+	IsGameEngineOnline = IsGameLoadingPtr(resolve(L"game.dll", "?IsGameEngineOnline@GameEngine@GAME@@QEBA_NXZ"));
+	IsGameWaiting = IsGameWaitingPtr(resolve(L"game.dll", "?IsGameWaiting@GameEngine@GAME@@QEAA_N_N@Z"));
+	SortInventorySack = SortInventorySackPtr(resolve(L"game.dll", "?Sort@InventorySack@GAME@@QEAA_NI@Z"));
+
+	g_gameApiResolved = (failures == 0);
+	DBGLOG("ResolveGameApi: %s (%d failures)", g_gameApiResolved ? "SUCCESS" : "INCOMPLETE", failures);
+	if (!g_gameApiResolved) {
+		LogToFile(LogLevel::FATAL, "ResolveGameApi: " + std::to_string(failures) + " exports failed to resolve - wrong game version?");
+	}
+	return g_gameApiResolved;
+}

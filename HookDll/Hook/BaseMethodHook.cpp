@@ -2,6 +2,7 @@
 #include "BaseMethodHook.h"
 #include "MessageType.h"
 #include "GrimTypes.h"
+#include "DebugLog.h"
 #include <detours.h>
 
 BaseMethodHook::BaseMethodHook() = default;
@@ -31,18 +32,30 @@ void* BaseMethodHook::HookDll(const wchar_t* dll, char* procAddress, void* Hooke
 	void* originalMethod = GetProcAddressOrLogToFile(dll, procAddress);
 	m_messageId = id;
 	if (originalMethod == NULL) {
+		// CRITICAL: never call DetourAttach with a NULL target. The old code
+		// attached anyway and ignored every Detours return code.
+		DBGLOG("HookDll: SKIPPING hook of %s - export not found in %ls", procAddress, dll);
 		ReportHookError(m_dataQueue, m_hEvent, id);
-	}
-	else {
-		ReportHookSuccess(m_dataQueue, m_hEvent, id);
+		return nullptr;
 	}
 
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach((PVOID*)&originalMethod, HookedMethod);
-	DetourTransactionCommit();
+	DBGLOG("HookDll: attaching %ls!%s at %p -> hook %p", dll, procAddress, originalMethod, HookedMethod);
 
+	LONG rBegin = DetourTransactionBegin();
+	LONG rUpdate = (rBegin == NO_ERROR) ? DetourUpdateThread(GetCurrentThread()) : -1;
+	LONG rAttach = (rUpdate == NO_ERROR) ? DetourAttach((PVOID*)&originalMethod, HookedMethod) : -1;
+	LONG rCommit = (rAttach == NO_ERROR) ? DetourTransactionCommit() : DetourTransactionAbort();
 
+	if (rBegin != NO_ERROR || rUpdate != NO_ERROR || rAttach != NO_ERROR || rCommit != NO_ERROR) {
+		DBGLOG("HookDll: DETOURS FAILURE hooking %s (begin=%ld update=%ld attach=%ld commit=%ld)",
+			procAddress, rBegin, rUpdate, rAttach, rCommit);
+		ReportHookError(m_dataQueue, m_hEvent, id);
+		return nullptr;
+	}
+
+	// originalMethod now points at the trampoline (call it to invoke the real function)
+	DBGLOG("HookDll: SUCCESS hooking %s, trampoline=%p", procAddress, originalMethod);
+	ReportHookSuccess(m_dataQueue, m_hEvent, id);
 	return originalMethod;
 }
 
@@ -55,8 +68,14 @@ void* BaseMethodHook::HookEngine(char* procAddress, void* HookedMethod, DataQueu
 }
 
 void BaseMethodHook::Unhook(void* originalMethod, void* Method) {
+	if (originalMethod == nullptr) {
+		return;
+	}
 	LONG res1 = DetourTransactionBegin();
 	LONG res2 = DetourUpdateThread(GetCurrentThread());
-	DetourDetach((PVOID*)&originalMethod, Method);
-	DetourTransactionCommit();
+	LONG res3 = DetourDetach((PVOID*)&originalMethod, Method);
+	LONG res4 = DetourTransactionCommit();
+	if (res1 != NO_ERROR || res2 != NO_ERROR || res3 != NO_ERROR || res4 != NO_ERROR) {
+		DBGLOG("Unhook: DETOURS failure (begin=%ld update=%ld detach=%ld commit=%ld)", res1, res2, res3, res4);
+	}
 }

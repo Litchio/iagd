@@ -8,11 +8,10 @@
 
 // TODO: What's this doing in HookLog.cpp ??
 std::wstring GetIagdFolder() {
-    PWSTR path_tmp;
+    PWSTR path_tmp = nullptr;
     auto get_folder_path_ret = SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &path_tmp);
 
-    if (get_folder_path_ret != S_OK) {
-        CoTaskMemFree(path_tmp);
+    if (get_folder_path_ret != S_OK || path_tmp == nullptr) {
 		LogToFile(LogLevel::WARNING, L"ERROR Could not find roaming appdata folder");
         return std::wstring();
     }
@@ -26,11 +25,19 @@ std::wstring GetIagdFolder() {
 HookLog::HookLog() : m_lastMessageCount(0), m_initialized(false) {
     std::wstring iagdFolder = GetIagdFolder(); // %appdata%\..\local\evilsoft\iagd
 
+    // CRITICAL FIX: the log directory is not created anywhere else. On a fresh
+    // Proton prefix it does not exist, m_out.open() silently failed, and ALL
+    // hook logging was silently discarded - leaving us blind.
+    if (!iagdFolder.empty()) {
+        std::error_code ec;
+        std::filesystem::create_directories(iagdFolder, ec);
+    }
+
     wchar_t tmpfolder[MAX_PATH]; // "%appdata%\..\local\temp\"
     GetTempPath(MAX_PATH, tmpfolder);
 
     std::wstring logFile(!iagdFolder.empty() ? iagdFolder : tmpfolder);
-    logFile += L"iagd_hook.log"; 
+    logFile += L"iagd_hook.log";
 
     m_out.open(logFile.c_str());
 

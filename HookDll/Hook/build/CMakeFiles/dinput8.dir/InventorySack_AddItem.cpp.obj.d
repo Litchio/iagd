@@ -425,4 +425,8 @@ CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj: \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/pstl/glue_numeric_defs.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/iostream \
  /workspaces/iagd/HookDll/Hook/Logger.h \
- /workspaces/iagd/HookDll/Hook/VTableDispatch.h
+ /workspaces/iagd/HookDll/Hook/VTableDispatch.h \
+ /workspaces/iagd/HookDll/Hook/DebugLog.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstdarg \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstring \
+ /workspaces/iagd/HookDll/Hook/HookConfig.h

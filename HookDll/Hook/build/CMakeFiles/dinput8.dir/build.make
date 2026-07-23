@@ -159,11 +159,26 @@ CMakeFiles/dinput8.dir/GrimTypes.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/dinput8.dir/GrimTypes.cpp.s"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspaces/iagd/HookDll/Hook/GrimTypes.cpp -o CMakeFiles/dinput8.dir/GrimTypes.cpp.s
 
+CMakeFiles/dinput8.dir/HookConfig.cpp.obj: CMakeFiles/dinput8.dir/flags.make
+CMakeFiles/dinput8.dir/HookConfig.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
+CMakeFiles/dinput8.dir/HookConfig.cpp.obj: /workspaces/iagd/HookDll/Hook/HookConfig.cpp
+CMakeFiles/dinput8.dir/HookConfig.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/dinput8.dir/HookConfig.cpp.obj"
+	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/HookConfig.cpp.obj -MF CMakeFiles/dinput8.dir/HookConfig.cpp.obj.d -o CMakeFiles/dinput8.dir/HookConfig.cpp.obj -c /workspaces/iagd/HookDll/Hook/HookConfig.cpp
+
+CMakeFiles/dinput8.dir/HookConfig.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/dinput8.dir/HookConfig.cpp.i"
+	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspaces/iagd/HookDll/Hook/HookConfig.cpp > CMakeFiles/dinput8.dir/HookConfig.cpp.i
+
+CMakeFiles/dinput8.dir/HookConfig.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/dinput8.dir/HookConfig.cpp.s"
+	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspaces/iagd/HookDll/Hook/HookConfig.cpp -o CMakeFiles/dinput8.dir/HookConfig.cpp.s
+
 CMakeFiles/dinput8.dir/HookLog.cpp.obj: CMakeFiles/dinput8.dir/flags.make
 CMakeFiles/dinput8.dir/HookLog.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/HookLog.cpp.obj: /workspaces/iagd/HookDll/Hook/HookLog.cpp
 CMakeFiles/dinput8.dir/HookLog.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/dinput8.dir/HookLog.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/dinput8.dir/HookLog.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/HookLog.cpp.obj -MF CMakeFiles/dinput8.dir/HookLog.cpp.obj.d -o CMakeFiles/dinput8.dir/HookLog.cpp.obj -c /workspaces/iagd/HookDll/Hook/HookLog.cpp
 
 CMakeFiles/dinput8.dir/HookLog.cpp.i: cmake_force
@@ -178,7 +193,7 @@ CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj: CMakeFiles/dinput8.dir/fla
 CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj: /workspaces/iagd/HookDll/Hook/InventorySack_AddItem.cpp
 CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj -MF CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj.d -o CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj -c /workspaces/iagd/HookDll/Hook/InventorySack_AddItem.cpp
 
 CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.i: cmake_force
@@ -193,7 +208,7 @@ CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj: CMakeFiles/dinput8.dir/flags.ma
 CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj: /workspaces/iagd/HookDll/Hook/OnDemandSeedInfo.cpp
 CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj -MF CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj.d -o CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj -c /workspaces/iagd/HookDll/Hook/OnDemandSeedInfo.cpp
 
 CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.i: cmake_force
@@ -208,7 +223,7 @@ CMakeFiles/dinput8.dir/SetHardcore.cpp.obj: CMakeFiles/dinput8.dir/flags.make
 CMakeFiles/dinput8.dir/SetHardcore.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/SetHardcore.cpp.obj: /workspaces/iagd/HookDll/Hook/SetHardcore.cpp
 CMakeFiles/dinput8.dir/SetHardcore.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/dinput8.dir/SetHardcore.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/dinput8.dir/SetHardcore.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/SetHardcore.cpp.obj -MF CMakeFiles/dinput8.dir/SetHardcore.cpp.obj.d -o CMakeFiles/dinput8.dir/SetHardcore.cpp.obj -c /workspaces/iagd/HookDll/Hook/SetHardcore.cpp
 
 CMakeFiles/dinput8.dir/SetHardcore.cpp.i: cmake_force
@@ -223,7 +238,7 @@ CMakeFiles/dinput8.dir/SettingsReader.cpp.obj: CMakeFiles/dinput8.dir/flags.make
 CMakeFiles/dinput8.dir/SettingsReader.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/SettingsReader.cpp.obj: /workspaces/iagd/HookDll/Hook/SettingsReader.cpp
 CMakeFiles/dinput8.dir/SettingsReader.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/dinput8.dir/SettingsReader.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/dinput8.dir/SettingsReader.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/SettingsReader.cpp.obj -MF CMakeFiles/dinput8.dir/SettingsReader.cpp.obj.d -o CMakeFiles/dinput8.dir/SettingsReader.cpp.obj -c /workspaces/iagd/HookDll/Hook/SettingsReader.cpp
 
 CMakeFiles/dinput8.dir/SettingsReader.cpp.i: cmake_force
@@ -238,7 +253,7 @@ CMakeFiles/dinput8.dir/stdafx.cpp.obj: CMakeFiles/dinput8.dir/flags.make
 CMakeFiles/dinput8.dir/stdafx.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/stdafx.cpp.obj: /workspaces/iagd/HookDll/Hook/stdafx.cpp
 CMakeFiles/dinput8.dir/stdafx.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/dinput8.dir/stdafx.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/dinput8.dir/stdafx.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/stdafx.cpp.obj -MF CMakeFiles/dinput8.dir/stdafx.cpp.obj.d -o CMakeFiles/dinput8.dir/stdafx.cpp.obj -c /workspaces/iagd/HookDll/Hook/stdafx.cpp
 
 CMakeFiles/dinput8.dir/stdafx.cpp.i: cmake_force
@@ -253,7 +268,7 @@ CMakeFiles/dinput8.dir/TcpClient.cpp.obj: CMakeFiles/dinput8.dir/flags.make
 CMakeFiles/dinput8.dir/TcpClient.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/TcpClient.cpp.obj: /workspaces/iagd/HookDll/Hook/TcpClient.cpp
 CMakeFiles/dinput8.dir/TcpClient.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/dinput8.dir/TcpClient.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/dinput8.dir/TcpClient.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/dinput8.dir/TcpClient.cpp.obj -MF CMakeFiles/dinput8.dir/TcpClient.cpp.obj.d -o CMakeFiles/dinput8.dir/TcpClient.cpp.obj -c /workspaces/iagd/HookDll/Hook/TcpClient.cpp
 
 CMakeFiles/dinput8.dir/TcpClient.cpp.i: cmake_force
@@ -268,7 +283,7 @@ CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.ob
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj: /workspaces/iagd/HookDll/Detours-master/src/detours.cpp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -include /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours_mingw_compat.h -MD -MT CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj -MF CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj.d -o CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.obj -c /workspaces/iagd/HookDll/Detours-master/src/detours.cpp
 
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/detours.cpp.i: cmake_force
@@ -283,7 +298,7 @@ CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj: /workspaces/iagd/HookDll/Detours-master/src/disasm.cpp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -include /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours_mingw_compat.h -MD -MT CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj -MF CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj.d -o CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.obj -c /workspaces/iagd/HookDll/Detours-master/src/disasm.cpp
 
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/disasm.cpp.i: cmake_force
@@ -298,7 +313,7 @@ CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj:
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj: /workspaces/iagd/HookDll/Detours-master/src/image.cpp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -include /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours_mingw_compat.h -MD -MT CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj -MF CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj.d -o CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.obj -c /workspaces/iagd/HookDll/Detours-master/src/image.cpp
 
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/image.cpp.i: cmake_force
@@ -313,7 +328,7 @@ CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.ob
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj: /workspaces/iagd/HookDll/Detours-master/src/modules.cpp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -include /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours_mingw_compat.h -MD -MT CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj -MF CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj.d -o CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.obj -c /workspaces/iagd/HookDll/Detours-master/src/modules.cpp
 
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/modules.cpp.i: cmake_force
@@ -328,7 +343,7 @@ CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.o
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj: CMakeFiles/dinput8.dir/includes_CXX.rsp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj: /workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj: CMakeFiles/dinput8.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj"
 	/usr/bin/x86_64-w64-mingw32-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -include /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours_mingw_compat.h -MD -MT CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj -MF CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj.d -o CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.obj -c /workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp
 
 CMakeFiles/dinput8.dir/workspaces/iagd/HookDll/Detours-master/src/creatwth.cpp.i: cmake_force
@@ -347,6 +362,7 @@ dinput8_OBJECTS = \
 "CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.obj" \
 "CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj" \
 "CMakeFiles/dinput8.dir/GrimTypes.cpp.obj" \
+"CMakeFiles/dinput8.dir/HookConfig.cpp.obj" \
 "CMakeFiles/dinput8.dir/HookLog.cpp.obj" \
 "CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj" \
 "CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj" \
@@ -369,6 +385,7 @@ bin/dinput8.dll: CMakeFiles/dinput8.dir/dllmain.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/GrimTypes.cpp.obj
+bin/dinput8.dll: CMakeFiles/dinput8.dir/HookConfig.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/HookLog.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj
 bin/dinput8.dll: CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj
@@ -385,7 +402,7 @@ bin/dinput8.dll: CMakeFiles/dinput8.dir/build.make
 bin/dinput8.dll: CMakeFiles/dinput8.dir/linkLibs.rsp
 bin/dinput8.dll: CMakeFiles/dinput8.dir/objects1.rsp
 bin/dinput8.dll: CMakeFiles/dinput8.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Linking CXX shared library bin/dinput8.dll"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/iagd/HookDll/Hook/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Linking CXX shared library bin/dinput8.dll"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/dinput8.dir/link.txt --verbose=$(VERBOSE)
 	/usr/bin/cmake -E echo =====\ DLL\ built:\ /workspaces/iagd/HookDll/Hook/build/bin/dinput8.dll\ =====
 	file /workspaces/iagd/HookDll/Hook/build/bin/dinput8.dll || echo File\ info\ not\ available

@@ -37,6 +37,7 @@ set(HOOK_SOURCES
     GameEngineUpdate.cpp
     GetPrivateStash.cpp
     GrimTypes.cpp
+    HookConfig.cpp
     HookLog.cpp
     InventorySack_AddItem.cpp
     OnDemandSeedInfo.cpp

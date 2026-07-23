@@ -454,4 +454,7 @@ CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj: \
  /workspaces/iagd/HookDll/Hook/GrimTypes.h \
  /workspaces/iagd/HookDll/Hook/Exports.h \
  /workspaces/iagd/HookDll/Hook/VTableDispatch.h \
- /workspaces/iagd/HookDll/Hook/Logger.h
+ /workspaces/iagd/HookDll/Hook/Logger.h \
+ /workspaces/iagd/HookDll/Hook/DebugLog.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstdarg \
+ /workspaces/iagd/HookDll/Hook/HookConfig.h

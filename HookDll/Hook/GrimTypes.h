@@ -183,48 +183,51 @@ namespace GAME
 	std::wstring GameTextLineToString(std::vector<GameTextLine>& gameTextLines);
 }
 
+// ============================================================================
+// Game API function pointers (game.dll / engine.dll exports)
+//
+// CRITICAL: These are NEVER resolved at static-init time. Under Proton the
+// proxy DLL can be loaded before game.dll/engine.dll, and the old
+// "static auto fn = ...(GetProcAddress...)" pattern baked NULL pointers into
+// every translation unit at CRT init, which later caused NULL dereferences
+// (both in DllMain and on the game's render thread).
+//
+// All pointers start as nullptr and are filled in by ResolveGameApi(), which
+// is called from the deferred init thread once the game modules are loaded.
+// ============================================================================
+
 // ?GetItemReplicaInfo@Item@GAME@@UEBAXAEAUItemReplicaInfo@2@@Z
 // void GAME::Item::GetItemReplicaInfo(struct GAME::ItemReplicaInfo &)
 //
 typedef void (__thiscall* ItemGetItemReplicaInfo)(void* This, GAME::ItemReplicaInfo& info);
-
+extern ItemGetItemReplicaInfo fnItemGetItemReplicaInfo;
 
 typedef GAME::Item* (__fastcall* pCreateItem)(GAME::ItemReplicaInfo* info);
-static auto fnCreateItem = pCreateItem(GetProcAddressOrLogToFile(L"game.dll", "?CreateItem@Item@GAME@@SAPEAV12@AEBUItemReplicaInfo@2@@Z"));
+extern pCreateItem fnCreateItem;
 
 typedef GAME::ObjectManager* (__fastcall* pGetObjectManager)();
-static auto fnGetObjectManager = pGetObjectManager(GetProcAddressOrLogToFile(L"engine.dll", "?Get@?$Singleton@VObjectManager@GAME@@@GAME@@SAPEAVObjectManager@2@XZ"));
+extern pGetObjectManager fnGetObjectManager;
 
 typedef void(__fastcall* pDestroyObjectEx)(GAME::ObjectManager*, GAME::Object* object, const char* file, int line);
-static auto fnDestroyObjectEx = pDestroyObjectEx(GetProcAddressOrLogToFile(L"engine.dll","?DestroyObjectEx@ObjectManager@GAME@@QEAAXPEAVObject@2@PEBDH@Z"));
-
-//typedef void(__fastcall* pItemEquipmentGetUIDisplayText)(GAME::ItemEquipment*, GAME::Character* myCharacter, std::vector<GAME::GameTextLine>* text);
-//static auto fnItemEquipmentGetUIDisplayText = pItemEquipmentGetUIDisplayText(GetProcAddressOrLogToFile(L"game.dll", "?GetUIDisplayText@ItemEquipment@GAME@@UEBAXPEBVCharacter@2@AEAV?$vector@UGameTextLine@GAME@@@mem@@_N@Z"));
-static auto fnItemGetItemReplicaInfo = ItemGetItemReplicaInfo(GetProcAddressOrLogToFile(L"game.dll", GET_ITEM_REPLICAINFO));
+extern pDestroyObjectEx fnDestroyObjectEx;
 
 typedef GAME::Player* (__fastcall* pGetMainPlayer)(GAME::GameEngine*);
-static auto fnGetMainPlayer = pGetMainPlayer(GetProcAddressOrLogToFile(L"game.dll", "?GetMainPlayer@GameEngine@GAME@@QEBAPEAVPlayer@2@XZ"));
-
+extern pGetMainPlayer fnGetMainPlayer;
 
 typedef void(__fastcall* pGetModNameArg)(GAME::GameInfo* gi, std::wstring* str);
-static auto fnGetModNameArg = pGetModNameArg(GetProcAddressOrLogToFile(L"engine.dll", "?GetModName@GameInfo@GAME@@QEAAXAEAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@@Z"));
-
+extern pGetModNameArg fnGetModNameArg;
 
 typedef int(__fastcall* pGetGameInfoMode)(GAME::GameInfo* gi);
-static auto fnGetGameInfoMode = pGetGameInfoMode(GetProcAddressOrLogToFile(L"engine.dll", "?GetMode@GameInfo@GAME@@QEBAIXZ"));
-
-//typedef std::wstring const& (__fastcall* pGetModName)(GAME::GameInfo* gi);
-//static auto fnGetModName = pGetModName(GetProcAddressOrLogToFile(L"engine.dll", "?GetModName@GameInfo@GAME@@QEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ"));
-
+extern pGetGameInfoMode fnGetGameInfoMode;
 
 typedef GAME::GameInfo* (__fastcall* pGetGameInfo)(GAME::Engine* ge);
-static auto fnGetGameInfo = pGetGameInfo(GetProcAddressOrLogToFile(L"engine.dll", "?GetGameInfo@Engine@GAME@@QEAAPEAVGameInfo@2@XZ"));
+extern pGetGameInfo fnGetGameInfo;
 
 typedef GAME::GameInfo* (__fastcall* pPlayDropSound)(GAME::Item* ge);
-static auto fnPlayDropSound = pPlayDropSound(GetProcAddressOrLogToFile(L"game.dll", "?PlayDropSound@Item@GAME@@UEAAXXZ"));
+extern pPlayDropSound fnPlayDropSound;
 
 typedef GAME::GameInfo* (__fastcall* pShowCinematicText)(GAME::Engine* engine, const std::wstring* header, const std::wstring* content, int CinematicTextType, GAME::Color* color, bool whateverThisIsIfTrueItCrashes);
-static auto fnShowCinematicText = pShowCinematicText(GetProcAddressOrLogToFile(L"engine.dll", "?ShowCinematicText@Engine@GAME@@QEAAXAEBV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@0W4CinematicTextType@2@AEBVColor@2@_N@Z"));
+extern pShowCinematicText fnShowCinematicText;
 // New: ?ShowCinematicText@Engine@GAME@@QEAAXAEBV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@0W4CinematicTextType@2@AEBVColor@2@_N@Z
 // Old: ?ShowCinematicText@Engine@GAME@@QEAAXAEBV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@0W4CinematicTextType@2@AEBVColor@2@@Z
 
@@ -236,19 +239,16 @@ extern IsGameLoadingPtr IsGameEngineOnline;
 extern IsGameWaitingPtr IsGameWaiting;
 extern SortInventorySackPtr SortInventorySack;
 
-
-// 
-// 
-//typedef unsigned __int64(__fastcall* pGetSelectedTransferSackNumber)(GAME::GameEngine*);
-//static auto fnGetSelectedTransferSackNumber = pGetSelectedTransferSackNumber(GetProcAddressOrLogToFile((L"game.dll", "?GetSelectedTransferSackNumber@GameEngine@GAME@@QEBAIXZ"));
-
-
 typedef void* (__fastcall* pGetPlayerTransfer)(GAME::GameEngine*);
-static auto fnGetPlayerTransfer = pGetPlayerTransfer(GetProcAddressOrLogToFile(L"game.dll", "?GetPlayerTransfer@GameEngine@GAME@@QEAAAEAV?$vector@PEAVInventorySack@GAME@@@mem@@XZ"));
-
-
+extern pGetPlayerTransfer fnGetPlayerTransfer;
 
 typedef bool(__fastcall* pGetHardcore)(GAME::GameInfo*);
+
+/// Resolves every game.dll / engine.dll export above.
+/// Non-blocking and safe to call repeatedly. Returns true only when ALL
+/// exports resolved. Callers MUST treat false as "game not ready, retry".
+bool ResolveGameApi();
+bool IsGameApiResolved();
 
 GAME::GameEngine* fnGetGameEngine();
 GAME::Engine* fnGetEngine(bool skipLog = false);

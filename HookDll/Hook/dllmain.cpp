@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <objbase.h>
 #include <fstream>
+#include <thread>
 #include "DataQueue.h"
 #include "MessageType.h"
 #include "InventorySack_AddItem.h"
@@ -17,7 +18,23 @@
 #include "SettingsReader.h"
 #include "TcpClient.h"
 #include "JsonSerializer.h"
-HookLog g_log;
+#include "DebugLog.h"
+#include "HookConfig.h"
+
+// Construct-on-first-use logger. The old global "HookLog g_log;" had undefined
+// construction order relative to static initializers in other translation units
+// that call LogToFile - UB during CRT init.
+HookLog& GetHookLog() {
+	static HookLog instance;
+	return instance;
+}
+#define g_log GetHookLog()
+
+// CRT static-init reachability marker: proves in dinput8_debug.log that the
+// CRT ran our static initializers (and survived them) before DllMain.
+static struct CrtInitMarker {
+	CrtInitMarker() { DBGLOG("CRT static initializers executing (pre-DllMain)"); }
+} g_crtInitMarker;
 
 #pragma region Variables
 // Switches hook logging on/off
@@ -240,7 +257,7 @@ unsigned __stdcall WorkerThreadMethodWrap(void* argss) {
 
 	LogToFile(LogLevel::INFO, L"Initiating class for seed info..");
 
-	if (listener != nullptr) {
+	if (listener != nullptr && g_hookConfig.startSeedInfoThread) {
 		listener->Start();
 	}
 	WorkerThreadMethod();
@@ -381,19 +398,159 @@ void ReportCancelledInjection() {
 
 std::vector<BaseMethodHook*> hooks;
 std::wstring GetIagdFolder();
+
+/// Detect Wine/Proton without relying on settings.json: Wine's ntdll exports
+/// wine_get_version. This makes Wine mode work even on a fresh prefix where
+/// nobody created %appdata%\..\local\evilsoft\iagd\settings.json.
+static bool DetectWine() {
+	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	return ntdll != NULL && GetProcAddress(ntdll, "wine_get_version") != NULL;
+}
+
+/// <summary>
+/// Deferred initialization - runs on a detached thread, OUTSIDE the loader
+/// lock. All potentially blocking or thread-suspending work (waiting for the
+/// game engine, Detours transactions, Winsock connect) belongs here, never in
+/// DllMain. The old code did everything inside DllMain and ABORTED when the
+/// game wasn't fully up yet; this version instead WAITS for the game.
+/// </summary>
+static void DeferredInit() {
+	DBGLOG("DeferredInit: thread started, waiting for game.dll + engine.dll...");
+
+	// Phase 1: wait for the game modules to be mapped (up to 120 s).
+	{
+		int waitedMs = 0;
+		const int maxWaitMs = 120000;
+		while (waitedMs < maxWaitMs &&
+			(GetModuleHandleW(L"game.dll") == NULL || GetModuleHandleW(L"engine.dll") == NULL)) {
+			Sleep(250);
+			waitedMs += 250;
+		}
+		DBGLOG("DeferredInit: game.dll=%p engine.dll=%p after ~%d ms",
+			(void*)GetModuleHandleW(L"game.dll"), (void*)GetModuleHandleW(L"engine.dll"), waitedMs);
+		if (waitedMs >= maxWaitMs) {
+			DBGLOG("DeferredInit: TIMEOUT waiting for game modules - hooks NOT installed");
+			LogToFile(LogLevel::FATAL, L"Timed out waiting for game.dll/engine.dll, aborting injection..");
+			ReportCancelledInjection();
+			return;
+		}
+	}
+
+	// Phase 2: resolve all game/engine exports (retry while incomplete).
+	{
+		int attempts = 0;
+		while (!ResolveGameApi() && attempts < 60) {
+			Sleep(500);
+			attempts++;
+		}
+		if (!IsGameApiResolved()) {
+			DBGLOG("DeferredInit: game API resolution FAILED - wrong game version? Hooks NOT installed.");
+			LogToFile(LogLevel::FATAL, L"Could not resolve game exports (wrong game version?), aborting injection..");
+			ReportCancelledInjection();
+			return;
+		}
+	}
+	DBGLOG("DeferredInit: game API resolved");
+
+	// Phase 3: wait until the engine reports online (up to 180 s).
+	{
+		int waitedMs = 0;
+		const int maxWaitMs = 180000;
+		bool online = false;
+		while (waitedMs < maxWaitMs) {
+			GAME::GameEngine* gameEngine = fnGetGameEngine();
+			if (gameEngine != nullptr && IsGameLoading != nullptr && IsGameEngineOnline != nullptr) {
+				bool loading = IsGameLoading(gameEngine);
+				bool isOnline = IsGameEngineOnline(gameEngine);
+				if (!loading && isOnline) {
+					online = true;
+					break;
+				}
+			}
+			Sleep(500);
+			waitedMs += 500;
+		}
+		DBGLOG("DeferredInit: engine online=%d after ~%d ms", (int)online, waitedMs);
+		if (!online) {
+			LogToFile(LogLevel::FATAL, L"Game engine never came online, aborting injection..");
+			ReportCancelledInjection();
+			return;
+		}
+	}
+
+	LogToFile(LogLevel::INFO, L"Game is running and engine online, installing hooks.");
+	g_hEvent = CreateEvent(NULL, FALSE, FALSE, L"IA_Worker");
+
+	if (g_hookConfig.hookInstaloot) {
+		ConfigureInstalootHooks(hooks);
+	}
+	else {
+		DBGLOG("DeferredInit: instaloot hooks DISABLED by config");
+	}
+
+	if (g_hookConfig.hookEngineRender || g_hookConfig.startSeedInfoThread) {
+		listener = new OnDemandSeedInfo(&g_dataQueue, g_hEvent);
+		if (listener != nullptr) {
+			hooks.push_back(listener);
+		}
+	}
+	else {
+		DBGLOG("DeferredInit: render hook + seed info DISABLED by config");
+	}
+
+	LogToFile(LogLevel::INFO, L"Starting hook enabling.. " + std::to_wstring(hooks.size()) + L" hooks.");
+	for (unsigned int i = 0; i < hooks.size(); i++) {
+		DBGLOG("DeferredInit: enabling hook %u of %zu", i, hooks.size());
+		hooks[i]->EnableHook();
+	}
+	DBGLOG("DeferredInit: hook enabling done");
+
+	if (g_hookConfig.startTcpClient) {
+		g_tcpClient = std::make_shared<TcpClient>("127.0.0.1", 1337);
+		std::thread tcpConnectThread([]() {
+			DBGLOG("TcpConnect: thread started");
+			try {
+				if (!g_tcpClient->Connect()) {
+					DBGLOG("TcpConnect: Connect() failed (backend not running?)");
+					LogToFile(LogLevel::WARNING, L"Failed to connect to TCP server, will retry on first message");
+				}
+				else {
+					DBGLOG("TcpConnect: connected to 127.0.0.1:1337");
+				}
+			}
+			catch (...) {
+				DBGLOG("TcpConnect: EXCEPTION during connect");
+				LogToFile(LogLevel::WARNING, L"Exception during TCP connection attempt");
+			}
+			});
+		tcpConnectThread.detach();
+	}
+	else {
+		DBGLOG("DeferredInit: TCP client DISABLED by config");
+	}
+
+	StartWorkerThread();
+	LogToFile(LogLevel::INFO, L"Initialization complete..");
+	DBGLOG("DeferredInit: initialization COMPLETE - hooks active");
+	g_log.setInitialized(true);
+}
+
 int ProcessAttach(HINSTANCE _hModule) {
-	//GetProductAndVersion();
+	DBGLOG("=== ProcessAttach entered (DLL_PROCESS_ATTACH) ===");
 	LogToFile(LogLevel::INFO, std::string("DLL Compiled: ") + std::string(__DATE__) + std::string(" ") + std::string(__TIME__));
 	LogToFile(LogLevel::INFO, L"Attatching to process..");
 
-	// Check if running in Wine/Proton
+	LoadHookConfig();
+
+	bool wineDetected = DetectWine();
+	DBGLOG("Wine auto-detect (ntdll!wine_get_version): %s", wineDetected ? "YES" : "no");
 	try {
 		SettingsReader settingsReader;
-		g_isRunningInWine = settingsReader.GetIsRunningInWine();
+		g_isRunningInWine = settingsReader.GetIsRunningInWine() || wineDetected;
 	}
 	catch (...) {
-		LogToFile(LogLevel::WARNING, L"Failed to read Wine setting, defaulting to false");
-		g_isRunningInWine = false;
+		LogToFile(LogLevel::WARNING, L"Failed to read Wine setting, using auto-detect result");
+		g_isRunningInWine = wineDetected;
 	}
 
 	if (g_isRunningInWine) {
@@ -414,111 +571,33 @@ int ProcessAttach(HINSTANCE _hModule) {
 		}
 	}
 
-	// PIN THE DLL IN MEMORY - CRITICAL FIX
-	// Grim Dawn dynamically loads and immediately unloads dinput8.dll to probe for controllers.
-	// If we don't pin the DLL, it gets freed while our detached tcpConnectThread is still running,
-	// causing an Access Violation (segfault) when the thread tries to execute code no longer in memory.
-	// This call forces Windows/Wine to never unload the DLL, even if the game calls FreeLibrary.
+	// PIN THE DLL IN MEMORY - Grim Dawn loads and immediately unloads
+	// dinput8.dll to probe for controllers. Pinning keeps our code resident
+	// even if the game calls FreeLibrary while our threads are running.
 	HMODULE hDummy = NULL;
 	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN, (LPCSTR)&ProcessAttach, &hDummy)) {
 		LogToFile(LogLevel::INFO, L"DLL pinned in memory successfully");
+		DBGLOG("ProcessAttach: DLL pinned in memory");
 	}
 	else {
 		LogToFile(LogLevel::WARNING, L"Failed to pin DLL in memory (GetModuleHandleEx failed), attempting fallback");
-		// Fallback: artificially bump reference count by loading ourselves
 		LoadLibraryA("dinput8.dll");
-		LogToFile(LogLevel::INFO, L"Fallback DLL pinning via LoadLibrary completed");
+		DBGLOG("ProcessAttach: DLL pinning fallback via LoadLibrary (err %lu)", (unsigned long)GetLastError());
 	}
 
-	GAME::GameEngine* gameEngine = fnGetGameEngine();
-	if (gameEngine == nullptr) {
-		ReportCancelledInjection();
-		LogToFile(LogLevel::INFO, L"Could not find game engine ptr, aborting DLL injection..");
-		return FALSE;
-	}
-	if (IsGameLoading(gameEngine)) {
-		ReportCancelledInjection();
-		LogToFile(LogLevel::INFO, L"Game is still loading, aborting DLL injection..");
-		return FALSE;
-	}
-	else {
-		LogToFile(LogLevel::INFO, L"Game is not loading..");
+	if (g_hookConfig.passthroughOnly) {
+		DBGLOG("Passthrough-only mode: DLL pinned, NO hooks, NO threads. "
+			"If the game still black-screens now, the proxy/export forwarding is the problem.");
+		LogToFile(LogLevel::INFO, L"Passthrough-only mode active (dinput8_config.json)");
+		return TRUE;
 	}
 
-	if (IsGameWaiting(gameEngine, true)) { // TODO: When on a PC with IDA installed, figure out what the boolean is.
-		ReportCancelledInjection();
-		LogToFile(LogLevel::INFO, L"Game is waiting, aborting DLL injection.. [true]");
-		return FALSE;
-	}
-	else {
-		LogToFile(LogLevel::INFO, L"Game is not waiting.. [true]");
-	}
+	// ALL heavy work (waiting for engine, Detours, Winsock) happens on a
+	// detached thread, outside the loader lock held during DllMain.
+	std::thread initThread(DeferredInit);
+	initThread.detach();
 
-	if (IsGameWaiting(gameEngine, false)) { // TODO: When on a PC with IDA installed, figure out what the boolean is.
-		ReportCancelledInjection();
-		LogToFile(LogLevel::INFO, L"Game is waiting, aborting DLL injection.. [false]");
-		return FALSE;
-	}
-	else {
-		LogToFile(LogLevel::INFO, L"Game is not waiting.. [false]");
-	}
-
-	if (!IsGameEngineOnline(gameEngine)) {
-		ReportCancelledInjection();
-		LogToFile(LogLevel::INFO, L"Game engine is not yet online, aborting DLL injection..");
-		return FALSE;
-	}
-	else {
-		LogToFile(LogLevel::INFO, L"Game engine is online..");
-	}
-
-	LogToFile(LogLevel::INFO, L"Game is most likely running, proceeding with injection.");
-
-
-	g_hEvent = CreateEvent(NULL, FALSE, FALSE, L"IA_Worker");
-
-	LogToFile(LogLevel::INFO, L"DLL for GD 1.2");
-
-
-
-	LogToFile(LogLevel::INFO, L"Preparing hooks..");
-	ConfigureInstalootHooks(hooks);
-
-	LogToFile(LogLevel::INFO, L"Preparing replica hooks..");
-
-	LogToFile(LogLevel::INFO, L"Creating seed info container class..");
-	listener = new OnDemandSeedInfo(&g_dataQueue, g_hEvent);
-	if (listener != nullptr) {
-		hooks.push_back(listener);
-	}
-	// hooks.push_back(new GameEngineUpdate(&g_dataQueue, g_hEvent));	 // Debug/test only
-
-	LogToFile(LogLevel::INFO, L"Starting hook enabling.. " + std::to_wstring(hooks.size()) + L" hooks.");
-	for (unsigned int i = 0; i < hooks.size(); i++) {
-		LogToFile(LogLevel::INFO, L"Enabling hook..");
-		hooks[i]->EnableHook();
-	}
-	LogToFile(LogLevel::INFO, L"Hooking complete..");
-
-	// Initialize TCP client for Rust backend in a separate thread to avoid loader lock deadlock
-	g_tcpClient = std::make_shared<TcpClient>("127.0.0.1", 1337);
-	// Spawn a detached thread to connect to TCP server - do NOT block DllMain
-	std::thread tcpConnectThread([]() {
-		try {
-			if (!g_tcpClient->Connect()) {
-				LogToFile(LogLevel::WARNING, L"Failed to connect to TCP server, will retry on first message");
-			}
-		}
-		catch (...) {
-			LogToFile(LogLevel::WARNING, L"Exception during TCP connection attempt");
-		}
-	});
-	tcpConnectThread.detach();  // Detach so DllMain doesn't wait
-
-	StartWorkerThread();
-	LogToFile(LogLevel::INFO, L"Initialization complete..");
-
-	g_log.setInitialized(true);
+	DBGLOG("ProcessAttach: returning TRUE, deferred init thread spawned");
 	return TRUE;
 }
 
@@ -575,51 +654,123 @@ BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  ul_reason_for_call, LPVOID lpRes
 }
 
 // ============================================================================
-// DirectInput8 Proxy Export - CRITICAL for game to load this DLL
+// DirectInput8 Proxy Exports - CRITICAL for the game to work with this DLL
 // ============================================================================
-// This export forwards DirectInput8Create calls to the real system dinput8.dll
-// Without this, the game will crash immediately when trying to load the proxy
+// Hardened forwarding to the real (Wine builtin) dinput8.dll:
+//  - Caches the real module handle.
+//  - REFUSES to forward to our own module. The old fallback
+//    LoadLibraryA("dinput8.dll") could resolve back to this proxy DLL,
+//    causing infinite recursion and a stack overflow (black screen).
+//  - Exports the full dinput8 surface (DllGetClassObject etc.), not just
+//    DirectInput8Create, so COM-based activation also works.
+//  - Logs every step to dinput8_debug.log.
 
 typedef HRESULT(WINAPI* DirectInput8CreateFunc)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+typedef HRESULT(WINAPI* DllGetClassObjectFunc)(REFCLSID, REFIID, LPVOID*);
+typedef HRESULT(WINAPI* DllSimpleFunc)();
+
+static HMODULE g_realDinput8 = NULL;
+
+static HMODULE GetOwnModule() {
+	HMODULE self = NULL;
+	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)&GetOwnModule, &self);
+	return self;
+}
+
+static HMODULE GetRealDinput8() {
+	if (g_realDinput8 != NULL) {
+		return g_realDinput8;
+	}
+
+	HMODULE self = GetOwnModule();
+	DBGLOG("GetRealDinput8: own module handle = %p", (void*)self);
+
+	// With WINEDLLOVERRIDES="dinput8=n,b", loading the System32 path resolves
+	// to Wine's BUILTIN dinput8 (the file there is a builtin placeholder).
+	HMODULE hReal = LoadLibraryA("C:\\Windows\\System32\\dinput8.dll");
+	DBGLOG("GetRealDinput8: LoadLibrary(System32\\dinput8.dll) -> %p (err %lu)",
+		(void*)hReal, (unsigned long)GetLastError());
+
+	if (hReal == self) {
+		// Resolved back to US - forwarding would recurse until stack overflow.
+		DBGLOG("GetRealDinput8: CRITICAL - System32 path resolved to our own module, refusing");
+		hReal = NULL;
+	}
+
+	if (hReal == NULL) {
+		HMODULE hFallback = LoadLibraryA("dinput8.dll");
+		DBGLOG("GetRealDinput8: fallback LoadLibrary(dinput8.dll) -> %p (err %lu)",
+			(void*)hFallback, (unsigned long)GetLastError());
+		if (hFallback != self) {
+			hReal = hFallback;
+		}
+		else {
+			DBGLOG("GetRealDinput8: fallback also resolved to ourselves - giving up");
+		}
+	}
+
+	g_realDinput8 = hReal;
+	return hReal;
+}
 
 extern "C" __declspec(dllexport) HRESULT WINAPI DirectInput8Create(
-    HINSTANCE hinst,
-    DWORD dwVersion,
-    REFIID riidltf,
-    LPVOID* ppvOut,
-    LPUNKNOWN punkOuter
+	HINSTANCE hinst,
+	DWORD dwVersion,
+	REFIID riidltf,
+	LPVOID* ppvOut,
+	LPUNKNOWN punkOuter
 )
 {
-    LogToFile(LogLevel::INFO, L"DirectInput8Create called - forwarding to real dinput8.dll");
-    
-    // Load the real system dinput8.dll (bypasses our proxy DLL)
-    // We use the system path to ensure we get the real one, not our proxy
-    HMODULE hRealDinput = LoadLibraryA("C:\\Windows\\System32\\dinput8.dll");
-    if (!hRealDinput) {
-        LogToFile(LogLevel::WARNING, L"Failed to load real dinput8.dll from System32");
-        // Fallback: try just the name (system will search)
-        hRealDinput = LoadLibraryA("dinput8.dll");
-        if (!hRealDinput) {
-            LogToFile(LogLevel::FATAL, L"Critical: Could not load real dinput8.dll at all");
-            return E_FAIL;
-        }
-    }
-    
-    // Get the real DirectInput8Create function from the system DLL
-    DirectInput8CreateFunc pRealDirectInput8Create = (DirectInput8CreateFunc)GetProcAddress(hRealDinput, "DirectInput8Create");
-    if (!pRealDirectInput8Create) {
-        LogToFile(LogLevel::FATAL, L"Critical: Could not get DirectInput8Create from real dinput8.dll");
-        FreeLibrary(hRealDinput);
-        return E_FAIL;
-    }
-    
-    // Forward the call to the real function
-    HRESULT hr = pRealDirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
-    
-    // Note: We do NOT call FreeLibrary here because the caller will keep using the interface
-    // The real dinput8.dll will remain loaded for the lifetime of the process
-    
-    return hr;
+	DBGLOG("DirectInput8Create: called (hinst=%p version=0x%lx)", (void*)hinst, (unsigned long)dwVersion);
+	LogToFile(LogLevel::INFO, L"DirectInput8Create called - forwarding to real dinput8.dll");
+
+	HMODULE hReal = GetRealDinput8();
+	if (hReal == NULL) {
+		DBGLOG("DirectInput8Create: no real dinput8 available - returning E_FAIL");
+		LogToFile(LogLevel::FATAL, L"Critical: Could not load real dinput8.dll at all");
+		return E_FAIL;
+	}
+
+	DirectInput8CreateFunc pReal = (DirectInput8CreateFunc)GetProcAddress(hReal, "DirectInput8Create");
+	if (pReal == nullptr) {
+		DBGLOG("DirectInput8Create: GetProcAddress failed on real module (err %lu)", (unsigned long)GetLastError());
+		LogToFile(LogLevel::FATAL, L"Critical: Could not get DirectInput8Create from real dinput8.dll");
+		return E_FAIL;
+	}
+
+	HRESULT hr = pReal(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+	DBGLOG("DirectInput8Create: forwarded to real dinput8, hr=0x%08lx", (unsigned long)hr);
+	return hr;
+}
+
+extern "C" __declspec(dllexport) HRESULT WINAPI DllCanUnloadNow() {
+	HMODULE hReal = GetRealDinput8();
+	DllSimpleFunc p = hReal ? (DllSimpleFunc)GetProcAddress(hReal, "DllCanUnloadNow") : nullptr;
+	return p ? p() : S_FALSE;
+}
+
+extern "C" __declspec(dllexport) HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
+	DBGLOG("DllGetClassObject: called");
+	HMODULE hReal = GetRealDinput8();
+	DllGetClassObjectFunc p = hReal ? (DllGetClassObjectFunc)GetProcAddress(hReal, "DllGetClassObject") : nullptr;
+	if (p == nullptr) {
+		return CLASS_E_CLASSNOTAVAILABLE;
+	}
+	return p(rclsid, riid, ppv);
+}
+
+extern "C" __declspec(dllexport) HRESULT WINAPI DllRegisterServer() {
+	HMODULE hReal = GetRealDinput8();
+	DllSimpleFunc p = hReal ? (DllSimpleFunc)GetProcAddress(hReal, "DllRegisterServer") : nullptr;
+	return p ? p() : E_FAIL;
+}
+
+extern "C" __declspec(dllexport) HRESULT WINAPI DllUnregisterServer() {
+	HMODULE hReal = GetRealDinput8();
+	DllSimpleFunc p = hReal ? (DllSimpleFunc)GetProcAddress(hReal, "DllUnregisterServer") : nullptr;
+	return p ? p() : E_FAIL;
 }
 
 #pragma endregion

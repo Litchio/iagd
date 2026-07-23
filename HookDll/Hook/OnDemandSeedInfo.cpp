@@ -10,6 +10,8 @@
 #include <filesystem>
 #include "nlohmann/json.hpp"
 #include "VTableDispatch.h"
+#include "DebugLog.h"
+#include "HookConfig.h"
 
 #include "Logger.h"
 std::wstring GetIagdFolder();
@@ -23,6 +25,7 @@ OnDemandSeedInfo::OnDemandSeedInfo(DataQueue* dataQueue, HANDLE hEvent) {
 	m_dataQueue = dataQueue;
 	m_hEvent = hEvent;
 	m_thread = nullptr;
+	m_isActive = false;
 	m_sleepMilliseconds = 0;
 	dll_Engine_Render = nullptr;
 	gameSetDifficultyRampMethod = nullptr;
@@ -42,6 +45,12 @@ OnDemandSeedInfo::OnDemandSeedInfo(DataQueue* dataQueue, HANDLE hEvent) {
 
 void OnDemandSeedInfo::EnableHook() {
 	g_self = this;
+
+	if (!g_hookConfig.hookEngineRender) {
+		DBGLOG("OnDemandSeedInfo::EnableHook - render/update hooks DISABLED by config");
+		LogToFile(LogLevel::INFO, L"Engine render hook disabled by config");
+		return;
+	}
 
 	gameSetDifficultyRampMethod = (OriginalEngineRenderMethodPtr)HookGame(
 		"?SetDifficultyRamp@GameEngine@GAME@@QEAAXH@Z",
@@ -444,6 +453,15 @@ std::wstring randomFilename32() {
 }
 
 void* __fastcall OnDemandSeedInfo::HookedGameSetDifficultyRampMethod(void* This, int v) {
+	static bool firstCallLogged = false;
+	if (!firstCallLogged) {
+		firstCallLogged = true;
+		DBGLOG("HookedGameSetDifficultyRampMethod: FIRST CALL - hook is live");
+	}
+	if (g_self == nullptr || g_self->gameSetDifficultyRampMethod == nullptr) {
+		return nullptr;
+	}
+
 	std::lock_guard<std::mutex> guard(g_self->_mutex);
 
 	LogToFile(LogLevel::INFO, L"The pesky SetDifficultyRamp@GameEngine is being called");
@@ -452,11 +470,25 @@ void* __fastcall OnDemandSeedInfo::HookedGameSetDifficultyRampMethod(void* This,
 }
 
 void* __fastcall OnDemandSeedInfo::Hooked_Engine_Render(void* This) {
+	static bool firstCallLogged = false;
+	if (!firstCallLogged) {
+		firstCallLogged = true;
+		DBGLOG("Hooked_Engine_Render: FIRST CALL - render hook is live");
+	}
 	if (This == nullptr) {
 		LogToFile(LogLevel::WARNING, L"Render@Engine called with 'This' being null");
 	}
 	if (g_self == nullptr) {
 		LogToFile(LogLevel::FATAL, L"Render@Engine called with 'g_self' being null");
+	}
+
+	// Never call game APIs that failed to resolve; just render and get out.
+	if (!IsGameApiResolved() || IsGameLoading == nullptr || IsGameEngineOnline == nullptr ||
+		g_self == nullptr || g_self->dll_Engine_Render == nullptr) {
+		if (g_self != nullptr && g_self->dll_Engine_Render != nullptr) {
+			return g_self->dll_Engine_Render(This);
+		}
+		return nullptr;
 	}
 
 	if (g_self->m_sleepMilliseconds <= 0) {

@@ -14,6 +14,8 @@
 #include <iostream>
 #include "Logger.h"
 #include "VTableDispatch.h"
+#include "DebugLog.h"
+#include "HookConfig.h"
 
 
 #define STASH_1 0
@@ -53,25 +55,30 @@ std::mutex InventorySack_AddItem::m_mutex;
 void InventorySack_AddItem::EnableHook() {
 	VTableDispatch::Init();
 
-	// GameInfo::
-	dll_GameInfo_GameInfo_Param = (GameInfo_GameInfo_Param)GetProcAddressOrLogToFile(L"Engine.dll", GAMEINFO_CONSTRUCTOR_ARGS);
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach((PVOID*)&dll_GameInfo_GameInfo_Param, Hooked_GameInfo_GameInfo_Param);
-	DetourTransactionCommit();
+	// GameInfo:: - routed via HookDll (NULL-guarded, all Detours codes checked/logged)
+	dll_GameInfo_GameInfo_Param = (GameInfo_GameInfo_Param)HookEngine(
+		GAMEINFO_CONSTRUCTOR_ARGS,
+		Hooked_GameInfo_GameInfo_Param,
+		m_dataQueue,
+		m_hEvent,
+		2 // Diagnostic hook id only (the raw Detours blocks this replaces never reported)
+	);
 
-	dll_InventorySack_AddItem_Drop = (InventorySack_AddItem_Drop)GetProcAddressOrLogToFile(L"Game.dll", "?AddItem@InventorySack@GAME@@QEAA_NPEAVItem@2@_N1@Z");
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach((PVOID*)&dll_InventorySack_AddItem_Drop, Hooked_InventorySack_AddItem_Drop);
-	DetourTransactionCommit();
+	dll_InventorySack_AddItem_Drop = (InventorySack_AddItem_Drop)HookGame(
+		"?AddItem@InventorySack@GAME@@QEAA_NPEAVItem@2@_N1@Z",
+		Hooked_InventorySack_AddItem_Drop,
+		m_dataQueue,
+		m_hEvent,
+		2 // Diagnostic hook id only
+	);
 
-
-	dll_InventorySack_AddItem_Vec2 = (InventorySack_AddItem_Vec2)GetProcAddressOrLogToFile(L"Game.dll", "?AddItem@InventorySack@GAME@@QEAA_NAEBVVec2@2@PEAVItem@2@_N@Z");
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach((PVOID*)&dll_InventorySack_AddItem_Vec2, Hooked_InventorySack_AddItem_Vec2);
-	DetourTransactionCommit();
+	dll_InventorySack_AddItem_Vec2 = (InventorySack_AddItem_Vec2)HookGame(
+		"?AddItem@InventorySack@GAME@@QEAA_NAEBVVec2@2@PEAVItem@2@_N@Z",
+		Hooked_InventorySack_AddItem_Vec2,
+		m_dataQueue,
+		m_hEvent,
+		2 // Diagnostic hook id only
+	);
 
 
 	dll_InventorySack_SetTransferOpen = (InventorySack_SetTransferOpen)HookGame(
@@ -84,13 +91,18 @@ void InventorySack_AddItem::EnableHook() {
 
 	m_isTransferStashOpen = false;
 
-	dll_GameEngine_Update = (GameEngine_Update)HookGame(
-		"?Update@GameEngine@GAME@@QEAAXH@Z",
-		Hooked_GameEngine_Update,
-		m_dataQueue,
-		m_hEvent,
-		TYPE_GAMEENGINE_UPDATE
-	);
+	if (g_hookConfig.hookGameEngineUpdate) {
+		dll_GameEngine_Update = (GameEngine_Update)HookGame(
+			"?Update@GameEngine@GAME@@QEAAXH@Z",
+			Hooked_GameEngine_Update,
+			m_dataQueue,
+			m_hEvent,
+			TYPE_GAMEENGINE_UPDATE
+		);
+	}
+	else {
+		DBGLOG("InventorySack_AddItem::EnableHook - GameEngine::Update hook DISABLED by config");
+	}
 
 	
 	m_isActive = false;
@@ -720,6 +732,20 @@ GAME::InventorySack* InventorySack_AddItem::GetSackToDepositTo(GAME::GameEngine*
 /// <param name="f2"></param>
 /// <returns></returns>
 void* __fastcall InventorySack_AddItem::Hooked_GameEngine_Update(void* This, int v) {
+	static bool firstCallLogged = false;
+	if (!firstCallLogged) {
+		firstCallLogged = true;
+		DBGLOG("Hooked_GameEngine_Update: FIRST CALL - update hook is live");
+	}
+
+	// Never call game APIs that failed to resolve; just run the original.
+	if (dll_GameEngine_Update == nullptr) {
+		return nullptr;
+	}
+	if (!IsGameApiResolved() || IsGameLoading == nullptr || IsGameWaiting == nullptr || IsGameEngineOnline == nullptr) {
+		return dll_GameEngine_Update(This, v);
+	}
+
 	try {
 		// IA not running? Continue
 		if (!m_isActive) {

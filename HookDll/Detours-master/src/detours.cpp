@@ -58,34 +58,49 @@ static PVOID    s_pSystemRegionUpperBound   = (PVOID)(ULONG_PTR)0x80000000;
 static bool detour_is_imported(PBYTE pbCode, PBYTE pbAddress)
 {
     MEMORY_BASIC_INFORMATION mbi;
-    VirtualQuery((PVOID)pbCode, &mbi, sizeof(mbi));
-    __try {
-        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)mbi.AllocationBase;
-        if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-            return false;
-        }
-
-        PIMAGE_NT_HEADERS pNtHeader = (PIMAGE_NT_HEADERS)((PBYTE)pDosHeader +
-                                                          pDosHeader->e_lfanew);
-        if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
-            return false;
-        }
-
-        if (pbAddress >= ((PBYTE)pDosHeader +
-                          pNtHeader->OptionalHeader
-                          .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress) &&
-            pbAddress < ((PBYTE)pDosHeader +
-                         pNtHeader->OptionalHeader
-                         .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress +
-                         pNtHeader->OptionalHeader
-                         .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size)) {
-            return true;
-        }
-    }
-#pragma prefast(suppress:28940, "A bad pointer means this probably isn't a PE header.")
-    __except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ?
-             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    if (VirtualQuery((PVOID)pbCode, &mbi, sizeof(mbi)) == 0) {
         return false;
+    }
+
+    // MinGW patch: the original code used __try/__except around the header
+    // probes below. GCC's catch(...) CANNOT trap access violations (SEH), so
+    // under MinGW an invalid pointer here would crash the process. Validate
+    // every probed page with VirtualQuery instead - no SEH required.
+    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)mbi.AllocationBase;
+    MEMORY_BASIC_INFORMATION mbiDos;
+    if (pDosHeader == NULL ||
+        VirtualQuery((PVOID)pDosHeader, &mbiDos, sizeof(mbiDos)) == 0 ||
+        mbiDos.State != MEM_COMMIT ||
+        (mbiDos.Protect & (PAGE_NOACCESS | PAGE_GUARD)) != 0) {
+        return false;
+    }
+
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        return false;
+    }
+
+    PIMAGE_NT_HEADERS pNtHeader = (PIMAGE_NT_HEADERS)((PBYTE)pDosHeader +
+                                                      pDosHeader->e_lfanew);
+    MEMORY_BASIC_INFORMATION mbiNt;
+    if (VirtualQuery((PVOID)pNtHeader, &mbiNt, sizeof(mbiNt)) == 0 ||
+        mbiNt.State != MEM_COMMIT ||
+        (mbiNt.Protect & (PAGE_NOACCESS | PAGE_GUARD)) != 0) {
+        return false;
+    }
+
+    if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
+        return false;
+    }
+
+    if (pbAddress >= ((PBYTE)pDosHeader +
+                      pNtHeader->OptionalHeader
+                      .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress) &&
+        pbAddress < ((PBYTE)pDosHeader +
+                     pNtHeader->OptionalHeader
+                     .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress +
+                     pNtHeader->OptionalHeader
+                     .DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size)) {
+        return true;
     }
     return false;
 }

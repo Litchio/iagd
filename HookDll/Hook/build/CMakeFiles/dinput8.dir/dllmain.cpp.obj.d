@@ -364,6 +364,10 @@ CMakeFiles/dinput8.dir/dllmain.cpp.obj: \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/x86_64-w64-mingw32/bits/basic_file.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/x86_64-w64-mingw32/bits/c++io.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/fstream.tcc \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/thread \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/std_thread.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/unique_ptr.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/this_thread_sleep.h \
  /workspaces/iagd/HookDll/Hook/DataQueue.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/queue \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/deque \
@@ -380,7 +384,6 @@ CMakeFiles/dinput8.dir/dllmain.cpp.obj: \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/stl_tempbuf.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/stl_raw_storage_iter.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/align.h \
- /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/unique_ptr.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/shared_ptr.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/shared_ptr_base.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/allocated_ptr.h \
@@ -396,9 +399,6 @@ CMakeFiles/dinput8.dir/dllmain.cpp.obj: \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/std_mutex.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/unique_lock.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/condition_variable \
- /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/thread \
- /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/std_thread.h \
- /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/this_thread_sleep.h \
  /workspaces/iagd/HookDll/Hook/MessageType.h \
  /workspaces/iagd/HookDll/Hook/InventorySack_AddItem.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/set \
@@ -502,4 +502,7 @@ CMakeFiles/dinput8.dir/dllmain.cpp.obj: \
  /usr/share/mingw-w64/include/in6addr.h \
  /usr/share/mingw-w64/include/psdk_inc/_ip_mreq1.h \
  /usr/share/mingw-w64/include/mstcpip.h \
- /workspaces/iagd/HookDll/Hook/JsonSerializer.h
+ /workspaces/iagd/HookDll/Hook/JsonSerializer.h \
+ /workspaces/iagd/HookDll/Hook/DebugLog.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstdarg \
+ /workspaces/iagd/HookDll/Hook/HookConfig.h

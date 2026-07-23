@@ -400,4 +400,7 @@ CMakeFiles/dinput8.dir/BaseMethodHook.cpp.obj: \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/charconv.h \
  /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/bits/basic_string.tcc \
  /workspaces/iagd/HookDll/Hook/Exports.h \
+ /workspaces/iagd/HookDll/Hook/DebugLog.h \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstdarg \
+ /usr/lib/gcc/x86_64-w64-mingw32/13-win32/include/c++/cstring \
  /workspaces/iagd/HookDll/Hook/../Detours-master/src/detours.h

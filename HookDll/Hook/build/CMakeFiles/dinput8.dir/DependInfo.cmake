@@ -13,6 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/workspaces/iagd/HookDll/Hook/GameEngineUpdate.cpp" "CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/GameEngineUpdate.cpp.obj.d"
   "/workspaces/iagd/HookDll/Hook/GetPrivateStash.cpp" "CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj.d"
   "/workspaces/iagd/HookDll/Hook/GrimTypes.cpp" "CMakeFiles/dinput8.dir/GrimTypes.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/GrimTypes.cpp.obj.d"
+  "/workspaces/iagd/HookDll/Hook/HookConfig.cpp" "CMakeFiles/dinput8.dir/HookConfig.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/HookConfig.cpp.obj.d"
   "/workspaces/iagd/HookDll/Hook/HookLog.cpp" "CMakeFiles/dinput8.dir/HookLog.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/HookLog.cpp.obj.d"
   "/workspaces/iagd/HookDll/Hook/InventorySack_AddItem.cpp" "CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj.d"
   "/workspaces/iagd/HookDll/Hook/OnDemandSeedInfo.cpp" "CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj" "gcc" "CMakeFiles/dinput8.dir/OnDemandSeedInfo.cpp.obj.d"

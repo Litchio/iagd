@@ -294,6 +294,30 @@ GrimTypes.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/GrimTypes.cpp.s
 .PHONY : GrimTypes.cpp.s
 
+HookConfig.obj: HookConfig.cpp.obj
+.PHONY : HookConfig.obj
+
+# target to build an object file
+HookConfig.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookConfig.cpp.obj
+.PHONY : HookConfig.cpp.obj
+
+HookConfig.i: HookConfig.cpp.i
+.PHONY : HookConfig.i
+
+# target to preprocess a source file
+HookConfig.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookConfig.cpp.i
+.PHONY : HookConfig.cpp.i
+
+HookConfig.s: HookConfig.cpp.s
+.PHONY : HookConfig.s
+
+# target to generate assembly for a file
+HookConfig.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dinput8.dir/build.make CMakeFiles/dinput8.dir/HookConfig.cpp.s
+.PHONY : HookConfig.cpp.s
+
 HookLog.obj: HookLog.cpp.obj
 .PHONY : HookLog.obj
 
@@ -634,6 +658,9 @@ help:
 	@echo "... GrimTypes.obj"
 	@echo "... GrimTypes.i"
 	@echo "... GrimTypes.s"
+	@echo "... HookConfig.obj"
+	@echo "... HookConfig.i"
+	@echo "... HookConfig.s"
 	@echo "... HookLog.obj"
 	@echo "... HookLog.i"
 	@echo "... HookLog.s"

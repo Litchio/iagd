@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/dinput8.dir/GetPrivateStash.cpp.obj.d"
   "CMakeFiles/dinput8.dir/GrimTypes.cpp.obj"
   "CMakeFiles/dinput8.dir/GrimTypes.cpp.obj.d"
+  "CMakeFiles/dinput8.dir/HookConfig.cpp.obj"
+  "CMakeFiles/dinput8.dir/HookConfig.cpp.obj.d"
   "CMakeFiles/dinput8.dir/HookLog.cpp.obj"
   "CMakeFiles/dinput8.dir/HookLog.cpp.obj.d"
   "CMakeFiles/dinput8.dir/InventorySack_AddItem.cpp.obj"
